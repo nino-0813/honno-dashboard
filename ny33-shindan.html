@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NY33 可能性発見診断™ | ヒアリングダッシュボード</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;600;800&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --washi:#FAF7F1;
+  --paper:#FFFFFF;
+  --ink:#20242C;
+  --ink-soft:#5C6270;
+  --navy:#16233F;
+  --navy-deep:#0D1729;
+  --gold:#B8862E;
+  --gold-soft:#F3E6C8;
+  --gold-line:#E4CFA0;
+  --line:#E4DFD1;
+  --radius:12px;
+  --shadow:0 4px 20px rgba(13,23,41,.08);
+  --font-display:'Shippori Mincho',serif;
+  --font-body:'Zen Kaku Gothic New',sans-serif;
+  --font-mono:'IBM Plex Mono',monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--font-body);
+  background:var(--washi);
+  color:var(--ink);
+  font-size:15px;
+  line-height:1.75;
+  overflow-x:hidden;
+}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  html{scroll-behavior:auto}
+}
+img,svg{max-width:100%}
+
+/* ===== ヘッダー ===== */
+.site-header{
+  position:sticky;top:0;z-index:100;
+  background:rgba(250,247,241,.94);
+  backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--line);
+  transition:box-shadow .3s;
+}
+.site-header.scrolled{box-shadow:0 2px 16px rgba(13,23,41,.1)}
+.header-inner{
+  max-width:1120px;margin:0 auto;padding:14px 20px;
+  display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+}
+.brand{display:flex;align-items:baseline;gap:10px}
+.brand-mark{font-family:var(--font-display);font-weight:800;font-size:22px;color:var(--navy);letter-spacing:.03em}
+.brand-mark .accent{color:var(--gold)}
+.brand-sub{font-size:10.5px;color:var(--ink-soft);letter-spacing:.1em}
+.header-actions{margin-left:auto;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.saved-indicator{font-family:var(--font-mono);font-size:11px;color:var(--ink-soft);white-space:nowrap}
+
+.btn{
+  appearance:none;border:1px solid var(--line);background:var(--paper);
+  color:var(--ink);font-family:var(--font-body);font-size:13px;font-weight:500;
+  padding:8px 16px;border-radius:999px;cursor:pointer;white-space:nowrap;
+  transition:transform .15s,box-shadow .15s,background .2s,color .2s,border-color .2s;
+}
+.btn:hover{transform:translateY(-1px);box-shadow:0 3px 10px rgba(13,23,41,.12)}
+.btn:active{transform:translateY(0)}
+.btn:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.btn-sm{padding:6px 13px;font-size:12px}
+.btn-gold{
+  background:var(--navy);border-color:var(--navy);color:#fff;
+  position:relative;overflow:hidden;
+}
+.btn-gold::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(120deg,transparent 30%,rgba(184,134,46,.55) 50%,transparent 70%);
+  transform:translateX(-110%);
+}
+.btn-gold:hover::after{transform:translateX(110%);transition:transform .6s ease}
+.btn-ghost{background:transparent;color:var(--ink-soft);border-color:var(--line)}
+.btn-ghost:hover{background:rgba(184,134,46,.08);color:var(--ink)}
+
+/* ===== ステップナビ ===== */
+.step-nav{
+  max-width:1120px;margin:0 auto;padding:0 20px 10px;
+  display:flex;gap:4px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;
+}
+.step-nav::-webkit-scrollbar{display:none}
+.step-nav a{
+  font-family:var(--font-mono);font-size:11.5px;color:var(--ink-soft);
+  text-decoration:none;padding:6px 12px;border-radius:999px;white-space:nowrap;
+  border:1px solid transparent;transition:color .2s,border-color .2s,background .2s;
+}
+.step-nav a:hover{color:var(--navy)}
+.step-nav a.active{color:var(--navy);border-color:var(--gold-line);background:var(--gold-soft);font-weight:600}
+
+.progress-bar{height:3px;background:var(--line);position:relative}
+.progress-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--navy),var(--gold));transition:width .1s linear}
+
+/* ===== レイアウト共通 ===== */
+main{max-width:880px;margin:0 auto;padding:0 20px 60px}
+.reveal{opacity:0;transform:translateY(22px);transition:opacity .7s ease,transform .7s ease}
+.reveal.visible{opacity:1;transform:none}
+
+/* ===== カバー / 表紙 ===== */
+.cover{
+  background:linear-gradient(160deg,var(--navy) 0%,var(--navy-deep) 100%);
+  color:#EDEEF3;margin:24px 0 44px;border-radius:18px;
+  padding:44px 32px;position:relative;overflow:hidden;
+}
+.cover::before{
+  content:'可能性';position:absolute;right:-16px;bottom:-46px;
+  font-family:var(--font-display);font-weight:800;font-size:150px;
+  color:rgba(255,255,255,.045);line-height:1;pointer-events:none;
+}
+.cover-eyebrow{font-family:var(--font-mono);font-size:11px;letter-spacing:.22em;color:var(--gold);text-transform:uppercase}
+.cover h1{font-family:var(--font-display);font-weight:600;font-size:clamp(24px,4.4vw,34px);line-height:1.5;margin-top:10px}
+.cover h1 .v{color:var(--gold)}
+.cover p.lead{font-size:13.5px;color:rgba(237,238,243,.8);max-width:560px;margin-top:12px}
+.cover-meta{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;
+  margin-top:26px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);
+  border-radius:var(--radius);padding:18px;
+}
+.cover-meta label{display:block;font-size:10.5px;letter-spacing:.08em;color:rgba(237,238,243,.65);margin-bottom:5px}
+.cover-meta input{
+  width:100%;background:rgba(255,255,255,.94);border:1px solid transparent;border-radius:6px;
+  padding:8px 10px;font-family:var(--font-body);font-size:13.5px;color:var(--ink);
+}
+.cover-meta input:focus{outline:none;box-shadow:0 0 0 3px rgba(184,134,46,.35)}
+.cover-note{margin-top:18px;font-size:12px;color:rgba(237,238,243,.6);max-width:560px}
+
+/* ===== STEP セクション ===== */
+.step-section{margin-bottom:56px}
+.step-head{margin-bottom:20px;padding-bottom:14px;border-bottom:1px solid var(--line)}
+.step-badge{
+  display:inline-block;font-family:var(--font-mono);font-size:11px;letter-spacing:.18em;
+  color:#fff;background:var(--navy);padding:4px 12px;border-radius:999px;margin-bottom:10px;
+}
+.step-head h2{font-family:var(--font-display);font-size:24px;font-weight:600;color:var(--navy)}
+.step-head h2 small{font-family:var(--font-body);font-size:13px;font-weight:400;color:var(--ink-soft);margin-left:8px}
+.step-desc{font-size:13.5px;color:var(--ink-soft);margin-top:6px;max-width:600px}
+
+.q-list{display:grid;gap:18px}
+.q-card{
+  background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);padding:20px;display:flex;gap:16px;
+}
+.q-num{
+  flex:none;width:38px;height:38px;border-radius:50%;
+  border:1.5px solid var(--gold-line);background:var(--gold-soft);
+  color:var(--navy);font-family:var(--font-display);font-weight:700;font-size:15px;
+  display:flex;align-items:center;justify-content:center;
+}
+.q-body{flex:1;min-width:0}
+.q-label{font-family:var(--font-body);font-weight:700;font-size:14.5px;color:var(--ink);display:block}
+.q-hint{font-size:12px;color:var(--ink-soft);margin-top:4px}
+.chip-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.hint-chip{
+  appearance:none;border:1px solid var(--gold-line);background:var(--gold-soft);
+  color:var(--navy);font-family:var(--font-body);font-size:11.5px;font-weight:500;
+  padding:4px 11px;border-radius:999px;cursor:pointer;transition:background .2s,transform .15s;
+}
+.hint-chip:hover{background:var(--gold);color:#fff;transform:translateY(-1px)}
+.chip-flow{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:8px}
+.chip-flow .hint-chip{cursor:default}
+.chip-flow .arrow{color:var(--gold-line);font-size:13px}
+
+textarea{
+  width:100%;font-family:var(--font-body);font-size:13.5px;color:var(--ink);
+  background:#fff;border:1px solid var(--line);border-radius:8px;
+  padding:10px 12px;margin-top:10px;resize:none;overflow:hidden;min-height:56px;line-height:1.7;
+  transition:border-color .2s,box-shadow .2s;
+}
+textarea:focus{outline:none;border-color:var(--navy);box-shadow:0 0 0 3px rgba(22,35,63,.1)}
+textarea::placeholder{color:#B7B2A4}
+
+/* ===== できない理由リスト(Q10) ===== */
+.reason-list{display:grid;gap:10px;margin-top:10px}
+.reason-row{
+  display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap;
+  background:var(--washi);border:1px solid var(--line);border-radius:8px;padding:10px;
+}
+.reason-row .reason-text{flex:1 1 220px;margin-top:0;min-height:44px}
+.kind-toggle{display:flex;gap:6px;flex:none}
+.kind-btn{
+  appearance:none;border:1px solid var(--line);background:#fff;color:var(--ink-soft);
+  font-family:var(--font-body);font-size:12px;padding:7px 12px;border-radius:999px;cursor:pointer;
+  transition:background .2s,color .2s,border-color .2s;
+}
+.kind-btn.fact.active{background:var(--navy);border-color:var(--navy);color:#fff}
+.kind-btn.belief.active{background:var(--gold);border-color:var(--gold);color:#fff}
+.kind-btn:hover{border-color:var(--gold-line)}
+.reason-del{
+  appearance:none;border:none;background:transparent;color:var(--ink-soft);
+  font-size:15px;cursor:pointer;padding:6px 4px;flex:none;line-height:1;
+}
+.reason-del:hover{color:#B4432C}
+.reason-foot{margin-top:12px;font-size:12px;color:var(--ink-soft)}
+
+/* ===== 診断まとめ ===== */
+.summary-section{margin-bottom:56px}
+.summary-grid{display:grid;gap:16px}
+.summary-card{
+  background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);padding:20px;
+}
+.summary-card .no{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.15em;color:var(--gold)}
+.summary-card h3{font-family:var(--font-display);font-size:16.5px;font-weight:600;color:var(--navy);margin-top:4px}
+.plan-cols{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:10px}
+.plan-cols div label{font-size:11px;color:var(--ink-soft);letter-spacing:.05em;display:block;margin-bottom:2px}
+.support-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-top:10px}
+.support-check{
+  display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:8px;
+  padding:9px 12px;font-size:13px;cursor:pointer;background:var(--washi);transition:border-color .2s,background .2s;
+}
+.support-check:has(input:checked){border-color:var(--gold);background:var(--gold-soft)}
+.support-check input{accent-color:var(--navy);width:16px;height:16px}
+
+/* ===== 可能性宣言 ===== */
+.declaration-section{margin-bottom:60px}
+.declaration-ref{
+  background:var(--paper);border:1px dashed var(--gold-line);border-radius:var(--radius);
+  padding:16px 18px;margin-bottom:18px;font-size:12.5px;color:var(--ink-soft);
+}
+.declaration-ref .eg{margin-top:8px;padding-left:12px;border-left:2px solid var(--gold-line);color:var(--ink)}
+.declaration-card{
+  background:linear-gradient(160deg,var(--navy) 0%,var(--navy-deep) 100%);
+  color:#EDEEF3;border-radius:18px;padding:36px 30px;position:relative;overflow:hidden;
+}
+.declaration-card::before{
+  content:'”';position:absolute;left:14px;top:-30px;font-family:var(--font-display);
+  font-size:180px;color:rgba(255,255,255,.06);line-height:1;
+}
+.declaration-eyebrow{font-family:var(--font-mono);font-size:11px;letter-spacing:.22em;color:var(--gold)}
+.declaration-card h2{font-family:var(--font-display);font-size:22px;font-weight:600;margin-top:10px;color:#fff}
+.declaration-card textarea{
+  margin-top:16px;background:rgba(255,255,255,.94);min-height:110px;font-size:15px;
+  font-family:var(--font-display);color:var(--navy-deep);border:none;
+}
+.declaration-close{
+  margin-top:26px;padding-top:20px;border-top:1px solid rgba(255,255,255,.18);
+  font-family:var(--font-display);font-size:17px;line-height:1.9;color:var(--gold-soft);
+}
+.declaration-sign{margin-top:14px;font-family:var(--font-mono);font-size:11px;letter-spacing:.18em;color:rgba(237,238,243,.55)}
+
+footer{border-top:1px solid var(--line);padding:26px 20px 40px;text-align:center;font-size:12px;color:var(--ink-soft)}
+footer .note{max-width:560px;margin:0 auto 8px}
+
+/* ===== レスポンシブ ===== */
+@media(max-width:768px){
+  .plan-cols{grid-template-columns:1fr}
+  .q-card{padding:16px;gap:12px}
+  .cover{padding:30px 20px}
+}
+@media(max-width:480px){
+  .step-head h2{font-size:20px}
+  .q-num{width:32px;height:32px;font-size:13px}
+  .declaration-card{padding:26px 18px}
+}
+
+/* ===== 印刷(PDF)専用 ===== */
+@media print{
+  @page{size:A4;margin:16mm 14mm}
+  body{background:#fff}
+  .site-header{position:static}
+  .no-print{display:none!important}
+  main{max-width:100%;padding:0}
+  .reveal{opacity:1!important;transform:none!important}
+  .cover{page-break-after:always;background:var(--navy)!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .step-section{page-break-before:always}
+  #step1{page-break-before:avoid}
+  .summary-section{page-break-before:always}
+  .declaration-section{page-break-before:always}
+  .q-card,.reason-row,.summary-card{break-inside:avoid;box-shadow:none;border:1px solid #ccc}
+  textarea{border:1px solid #ccc!important;box-shadow:none!important;background:#fff!important;height:auto!important;overflow:visible!important;color:#000!important}
+  .declaration-card{background:var(--navy)!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .declaration-card textarea{background:#fff!important;color:#000!important}
+  .hint-chip,.reason-del,#addReasonBtn{display:none!important}
+}
+</style>
+</head>
+<body>
+
+<header class="site-header" id="siteHeader">
+  <div class="header-inner">
+    <div class="brand">
+      <span class="brand-mark">NY<span class="accent">33</span></span>
+      <span class="brand-sub">可能性発見診断™ — HEARING DASHBOARD</span>
+    </div>
+    <div class="header-actions no-print">
+      <span class="saved-indicator" id="savedIndicator">未保存</span>
+      <button class="btn btn-ghost btn-sm" id="resetBtn" type="button">データを削除</button>
+      <button class="btn btn-gold btn-sm" id="pdfBtn" type="button">⬇ PDFダウンロード</button>
+    </div>
+  </div>
+  <nav class="step-nav no-print" aria-label="診断ステップ">
+    <a href="#cover">表紙</a>
+    <a href="#step1">STEP1 現状</a>
+    <a href="#step2">STEP2 価値</a>
+    <a href="#step3">STEP3 壁</a>
+    <a href="#step4">STEP4 可能性</a>
+    <a href="#step5">STEP5 イシュー</a>
+    <a href="#step6">STEP6 一歩</a>
+    <a href="#summarySection">診断まとめ</a>
+    <a href="#declarationSection">可能性宣言</a>
+  </nav>
+  <div class="progress-bar no-print"><div class="progress-fill" id="progressFill"></div></div>
+</header>
+
+<main>
+
+<!-- ================= 表紙 ================= -->
+<section class="cover reveal" id="cover">
+  <p class="cover-eyebrow">NY33 POSSIBILITY DIAGNOSIS — Ver1.0</p>
+  <h1>あなたの会社の<span class="v">可能性</span>を発見する。<br>診断 → 可能性 → 実行。</h1>
+  <p class="lead">これはヒアリングシートではありません。NY33があなたの会社と対話しながら、まだ言葉になっていない価値を見つけ、90日で動き出せる実行計画へつなげるための診断書です。</p>
+  <div class="cover-meta">
+    <div><label>会社名・屋号</label><input type="text" data-key="meta_company" placeholder="例：田んぼのホテル"></div>
+    <div><label>業種</label><input type="text" data-key="meta_industry" placeholder="例：宿泊業／農業／製造業"></div>
+    <div><label>ご担当者名</label><input type="text" data-key="meta_contact" placeholder="例：山田 太郎 様"></div>
+    <div><label>実施日</label><input type="date" data-key="meta_date"></div>
+    <div><label>NY33担当</label><input type="text" data-key="meta_staff" placeholder="例：〇〇"></div>
+  </div>
+  <p class="cover-note">※ 入力内容はこの端末のブラウザ内にのみ保存され、外部には送信されません。回答後は右上の「PDFダウンロード」から診断書として保存し、誰でもダウンロードできます。</p>
+</section>
+
+<!-- ================= STEP1 現状を知る ================= -->
+<section class="step-section reveal" id="step1" data-step="1">
+  <div class="step-head">
+    <span class="step-badge">STEP 1</span>
+    <h2>現状を知る<small>(症状)</small></h2>
+    <p class="step-desc">まずは何が起きているのか、言葉にすることから始めます。</p>
+  </div>
+  <div class="q-list">
+    <div class="q-card">
+      <div class="q-num">01</div>
+      <div class="q-body">
+        <label class="q-label">今、一番困っていることは何ですか？</label>
+        <p class="q-hint">売上・採用・利益・時間・集客など</p>
+        <textarea data-key="q1" placeholder="今、一番の困りごとを書いてください"></textarea>
+      </div>
+    </div>
+    <div class="q-card">
+      <div class="q-num">02</div>
+      <div class="q-body">
+        <label class="q-label">もしこれが解決したら、会社はどう変わりますか？</label>
+        <p class="q-hint">目的を明確にします</p>
+        <textarea data-key="q2" placeholder="解決した先の会社の姿を書いてください"></textarea>
+      </div>
+    </div>
+    <div class="q-card">
+      <div class="q-num">03</div>
+      <div class="q-body">
+        <label class="q-label">逆に、今一番うまくいっていることは何ですか？</label>
+        <p class="q-hint">問題だけでなく、強みにも目を向けます</p>
+        <textarea data-key="q3" placeholder="今、一番うまくいっていることを書いてください"></textarea>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= STEP2 価値を発見する ================= -->
+<section class="step-section reveal" id="step2" data-step="2">
+  <div class="step-head">
+    <span class="step-badge">STEP 2</span>
+    <h2>価値を発見する<small>(ここからNY33らしさ)</small></h2>
+    <p class="step-desc">お客様が本当に買っているものと、気づいていない価値を探ります。</p>
+  </div>
+  <div class="q-list">
+    <div class="q-card">
+      <div class="q-num">04</div>
+      <div class="q-body">
+        <label class="q-label">お客様は何を買っていると思いますか？</label>
+        <div class="chip-row" data-target="q4">
+          <button type="button" class="hint-chip">商品</button>
+          <button type="button" class="hint-chip">サービス</button>
+          <button type="button" class="hint-chip">安心</button>
+          <button type="button" class="hint-chip">時間</button>
+          <button type="button" class="hint-chip">信頼</button>
+        </div>
+        <textarea data-key="q4" placeholder="お客様が本当に買っているものを書いてください"></textarea>
+      </div>
+    </div>
+    <div class="q-card">
+      <div class="q-num">05</div>
+      <div class="q-body">
+        <label class="q-label">お客様が一番喜んでいることは何ですか？</label>
+        <p class="q-hint">レビューや会話から探してみてください</p>
+        <textarea data-key="q5" placeholder="お客様が一番喜んでいることを書いてください"></textarea>
+      </div>
+    </div>
+    <div class="q-card">
+      <div class="q-num">06</div>
+      <div class="q-body">
+        <label class="q-label">他社では真似できないことはありますか？</label>
+        <div class="chip-row" data-target="q6">
+          <button type="button" class="hint-chip">技術</button>
+          <button type="button" class="hint-chip">歴史</button>
+          <button type="button" class="hint-chip">人柄</button>
+          <button type="button" class="hint-chip">地域</button>
+          <button type="button" class="hint-chip">経験</button>
+          <button type="button" class="hint-chip">文化</button>
+        </div>
+        <textarea data-key="q6" placeholder="他社には真似できない要素を書いてください"></textarea>
+      </div>
+    </div>
+    <div class="q-card">
+      <div class="q-num">07</div>
+      <div class="q-body">
+        <label class="q-label">「当たり前すぎて価値だと思っていないこと」は何ですか？</label>
+        <p class="q-hint">ここが"田んぼの景色"です</p>
+        <textarea data-key="q7" placeholder="当たり前すぎて見過ごしている価値を書いてください"></textarea>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= STEP3 見えない壁を探す ================= -->
+<section class="step-section reveal" id="step3" data-step="3">
+  <div class="step-head">
+    <span class="step-badge">STEP 3</span>
+    <h2>見えない壁を探す</h2>
+    <p class="step-desc">成長を止めている原因を、本人の視点と第三者の視点の両方から見ます。</p>
+  </div>
+  <div class="q-list">
+    <div class="q-card">
+      <div class="q-num">08</div>
+      <div class="q-body">
+        <label class="q-label">この会社が成長を止めている一番の原因は何だと思いますか？</label>
+        <p class="q-hint">まずはご本人の仮説として</p>
+        <textarea data-key="q8" placeholder="ご本人が考える成長を止めている原因"></textarea>
+      </div>
+    </div>
+    <div class="q-card">
+      <div class="q-num">09</div>
+      <div class="q-body">
+        <label class="q-label">第三者から見ると何が原因だと思いますか？</label>
+        <p class="q-hint">NY33が診断します</p>
+        <textarea data-key="q9" placeholder="第三者(NY33)の視点での仮説"></textarea>
+      </div>
+    </div>
+    <div class="q-card">
+      <div class="q-num">10</div>
+      <div class="q-body">
+        <label class="q-label">「できない理由」を全部書き出してください。</label>
+        <p class="q-hint">書き出した後、それぞれ「事実」か「思い込み」かを選んでください</p>
+        <div class="reason-list" id="reasonList"></div>
+        <button type="button" class="btn btn-ghost btn-sm no-print" id="addReasonBtn" style="margin-top:10px">＋ 理由を追加</button>
+        <p class="reason-foot">例：お金がない／人がいない／時間がない／地方だから — これは事実ですか？それとも思い込みですか？</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= STEP4 可能性を広げる ================= -->
+<section class="step-section reveal" id="step4" data-step="4">
+  <div class="step-head">
+    <span class="step-badge">STEP 4</span>
+    <h2>可能性を広げる</h2>
+    <p class="step-desc">今のお客様の枠を超えて、価値が届く先を広げて考えます。</p>
+  </div>
+  <div class="q-list">
+    <div class="q-card">
+      <div class="q-num">11</div>
+      <div class="q-body">
+        <label class="q-label">この会社の価値を、一番喜ぶのは誰ですか？</label>
+        <div class="chip-row" data-target="q11">
+          <button type="button" class="hint-chip">今のお客様</button>
+          <button type="button" class="hint-chip">海外</button>
+          <button type="button" class="hint-chip">子供</button>
+          <button type="button" class="hint-chip">高齢者</button>
+          <button type="button" class="hint-chip">企業</button>
+          <button type="button" class="hint-chip">観光客</button>
+        </div>
+        <textarea data-key="q11" placeholder="この価値を一番喜ぶ相手を広げて考えてください"></textarea>
+      </div>
+    </div>
+    <div class="q-card">
+      <div class="q-num">12</div>
+      <div class="q-body">
+        <label class="q-label">この価値は別の業界でも活かせますか？</label>
+        <div class="chip-flow">
+          <span class="hint-chip">農業</span><span class="arrow">→</span>
+          <span class="hint-chip">観光</span><span class="arrow">→</span>
+          <span class="hint-chip">教育</span><span class="arrow">→</span>
+          <span class="hint-chip">AI</span><span class="arrow">→</span>
+          <span class="hint-chip">海外</span>
+        </div>
+        <textarea data-key="q12" placeholder="他の業界へ価値が広がる可能性を書いてください"></textarea>
+      </div>
+    </div>
+    <div class="q-card">
+      <div class="q-num">13</div>
+      <div class="q-body">
+        <label class="q-label">3年後、この会社が地域No.1になるとしたら何が起きていますか？</label>
+        <p class="q-hint">未来を具体的に描いてください</p>
+        <textarea data-key="q13" placeholder="3年後の理想の姿を具体的に書いてください"></textarea>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= STEP5 イシューを決める ================= -->
+<section class="step-section reveal" id="step5" data-step="5">
+  <div class="step-head">
+    <span class="step-badge">STEP 5</span>
+    <h2>イシューを決める<small>(戦略)</small></h2>
+    <p class="step-desc">全部はやりません。今、一番解くべき問題を一つだけ選びます。</p>
+  </div>
+  <div class="q-list">
+    <div class="q-card">
+      <div class="q-num">14</div>
+      <div class="q-body">
+        <label class="q-label">今、一番解くべき問題は何ですか？</label>
+        <div class="chip-row" data-target="q14">
+          <button type="button" class="hint-chip">集客</button>
+          <button type="button" class="hint-chip">リピート</button>
+          <button type="button" class="hint-chip">商品</button>
+          <button type="button" class="hint-chip">ブランド</button>
+        </div>
+        <textarea data-key="q14" placeholder="一つだけ選んだ問題を書いてください"></textarea>
+      </div>
+    </div>
+    <div class="q-card">
+      <div class="q-num">15</div>
+      <div class="q-body">
+        <label class="q-label">その問題が解決したら何が変わりますか？</label>
+        <p class="q-hint">インパクトを見ます</p>
+        <textarea data-key="q15" placeholder="解決した時のインパクトを書いてください"></textarea>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= STEP6 最初の一歩 ================= -->
+<section class="step-section reveal" id="step6" data-step="6">
+  <div class="step-head">
+    <span class="step-badge">STEP 6</span>
+    <h2>最初の一歩</h2>
+    <p class="step-desc">次の30日で何をするか、たった一つに絞ります。</p>
+  </div>
+  <div class="q-list">
+    <div class="q-card">
+      <div class="q-num">16</div>
+      <div class="q-body">
+        <label class="q-label">次の30日で何をしますか？</label>
+        <div class="chip-row" data-target="q16">
+          <button type="button" class="hint-chip">LP改善</button>
+          <button type="button" class="hint-chip">LINE導入</button>
+          <button type="button" class="hint-chip">Googleマップ改善</button>
+          <button type="button" class="hint-chip">商品見直し</button>
+          <button type="button" class="hint-chip">AI導入</button>
+        </div>
+        <textarea data-key="q16" placeholder="次の30日でやることを一つ書いてください"></textarea>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 診断まとめ ================= -->
+<section class="summary-section reveal" id="summarySection">
+  <div class="step-head">
+    <span class="step-badge">NY33 SUMMARY</span>
+    <h2>診断結果<small>(NY33がまとめる7項目)</small></h2>
+    <p class="step-desc">ヒアリング内容をもとに、NY33がこの7項目で診断結果を返します。</p>
+  </div>
+  <div class="summary-grid">
+    <div class="summary-card">
+      <p class="no">① 現在地</p>
+      <h3>会社の現状</h3>
+      <textarea data-key="sum1" placeholder="現状の要約を書いてください"></textarea>
+    </div>
+    <div class="summary-card">
+      <p class="no">② 本当の価値</p>
+      <h3>本人が気付いていない価値</h3>
+      <textarea data-key="sum2" placeholder="気づいていない価値を書いてください"></textarea>
+    </div>
+    <div class="summary-card">
+      <p class="no">③ 見えない壁</p>
+      <h3>成長を止めているもの</h3>
+      <textarea data-key="sum3" placeholder="成長を止めている壁を書いてください"></textarea>
+    </div>
+    <div class="summary-card">
+      <p class="no">④ 一番大きな可能性</p>
+      <h3>未来</h3>
+      <textarea data-key="sum4" placeholder="一番大きな可能性を書いてください"></textarea>
+    </div>
+    <div class="summary-card">
+      <p class="no">⑤ イシュー</p>
+      <h3>今解くべき問題</h3>
+      <textarea data-key="sum5" placeholder="今解くべき問題を書いてください"></textarea>
+    </div>
+    <div class="summary-card">
+      <p class="no">⑥ 実行計画</p>
+      <h3>90日プラン</h3>
+      <div class="plan-cols">
+        <div><label>最初の30日</label><textarea data-key="plan30" placeholder="30日でやること"></textarea></div>
+        <div><label>60日目まで</label><textarea data-key="plan60" placeholder="60日目までにやること"></textarea></div>
+        <div><label>90日目まで</label><textarea data-key="plan90" placeholder="90日目までにやること"></textarea></div>
+      </div>
+    </div>
+    <div class="summary-card">
+      <p class="no">⑦ NY33が伴走できること</p>
+      <h3>伴走メニュー</h3>
+      <div class="support-grid">
+        <label class="support-check"><input type="checkbox" class="support-check-input" value="Web">Web</label>
+        <label class="support-check"><input type="checkbox" class="support-check-input" value="AI">AI</label>
+        <label class="support-check"><input type="checkbox" class="support-check-input" value="SEO">SEO</label>
+        <label class="support-check"><input type="checkbox" class="support-check-input" value="LINE">LINE</label>
+        <label class="support-check"><input type="checkbox" class="support-check-input" value="分析">分析</label>
+        <label class="support-check"><input type="checkbox" class="support-check-input" value="改善">改善</label>
+      </div>
+      <textarea data-key="sum7note" placeholder="その他、伴走できる内容があれば書いてください" style="margin-top:12px"></textarea>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 可能性宣言 ================= -->
+<section class="declaration-section reveal" id="declarationSection">
+  <div class="step-head">
+    <span class="step-badge">FINAL PAGE</span>
+    <h2>あなたの会社の未来<small>(可能性宣言)</small></h2>
+    <p class="step-desc">これは診断結果ではなく、未来への仮説です。数字では語れない、この会社の可能性を一文にします。</p>
+  </div>
+  <div class="declaration-ref">
+    参考例
+    <div class="eg">田んぼのホテルなら「あなたの会社はホテルではありません。日本の原風景を世界中の人へ届ける会社になれる可能性があります。」</div>
+    <div class="eg">農家なら「あなたは米を売っているのではありません。生産者の想いと日本の食文化を未来へつなぐ会社になれる可能性があります。」</div>
+    <div class="eg">町工場なら「あなたは部品を作っているのではありません。日本の技術を支える会社になれる可能性があります。」</div>
+  </div>
+  <div class="declaration-card">
+    <p class="declaration-eyebrow">POSSIBILITY DECLARATION</p>
+    <h2>この会社の可能性宣言</h2>
+    <textarea data-key="declaration" placeholder="あなたは〇〇を売っているのではありません。〇〇になれる可能性があります。"></textarea>
+    <div class="declaration-close">
+      この可能性を現実にするために、<br>ここから一緒に走りましょう。
+    </div>
+    <p class="declaration-sign">NY33 — 可能性発見診断™</p>
+  </div>
+</section>
+
+</main>
+
+<footer class="no-print">
+  <p class="note">※ 入力内容はこの端末のブラウザにのみ自動保存されます。診断書として共有・保存する場合は、上部の「PDFダウンロード」をご利用ください。</p>
+  <p>NY33 可能性発見診断™ — Diagnosis / Possibility / Action</p>
+</footer>
+
+<script>
+const STORAGE_KEY = 'ny33_shindan_v1';
+const reasonListEl = document.getElementById('reasonList');
+const addReasonBtn = document.getElementById('addReasonBtn');
+const progressFill = document.getElementById('progressFill');
+const header = document.getElementById('siteHeader');
+const savedIndicator = document.getElementById('savedIndicator');
+let saveTimer = null;
+
+function escapeHtml(str){
+  const d = document.createElement('div');
+  d.textContent = str || '';
+  return d.innerHTML;
+}
+
+function autoGrow(el){
+  if(!el) return;
+  el.style.height = 'auto';
+  el.style.height = el.scrollHeight + 'px';
+}
+
+function addReasonRow(text, kind){
+  const row = document.createElement('div');
+  row.className = 'reason-row';
+  row.innerHTML =
+    '<textarea class="reason-text" rows="1" placeholder="できない理由を書いてください">' + escapeHtml(text) + '</textarea>' +
+    '<div class="kind-toggle">' +
+      '<button type="button" class="kind-btn fact" data-kind="事実">事実</button>' +
+      '<button type="button" class="kind-btn belief" data-kind="思い込み">思い込み</button>' +
+    '</div>' +
+    '<button type="button" class="reason-del no-print" aria-label="この行を削除">✕</button>';
+  if(kind){
+    const btn = row.querySelector('.kind-btn[data-kind="' + kind + '"]');
+    if(btn) btn.classList.add('active');
+  }
+  reasonListEl.appendChild(row);
+  autoGrow(row.querySelector('.reason-text'));
+}
+
+function ensureDefaultReasons(){
+  const examples = ['例：お金がない', '例：人がいない', '例：時間がない', '例：地方だから'];
+  examples.forEach(ph => {
+    addReasonRow('', '');
+    reasonListEl.lastElementChild.querySelector('.reason-text').placeholder = ph;
+  });
+}
+
+function saveState(){
+  const fields = {};
+  document.querySelectorAll('[data-key]').forEach(el => { fields[el.dataset.key] = el.value; });
+  const reasons = Array.from(document.querySelectorAll('.reason-row')).map(row => ({
+    text: row.querySelector('.reason-text').value,
+    kind: row.querySelector('.kind-btn.active') ? row.querySelector('.kind-btn.active').dataset.kind : ''
+  }));
+  const checks = Array.from(document.querySelectorAll('.support-check-input:checked')).map(c => c.value);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({ fields, reasons, checks, savedAt: Date.now() }));
+  updateSavedIndicator();
+}
+
+function updateSavedIndicator(){
+  const now = new Date();
+  const hh = String(now.getHours()).padStart(2, '0');
+  const mm = String(now.getMinutes()).padStart(2, '0');
+  savedIndicator.textContent = '自動保存済み ・ ' + hh + ':' + mm;
+}
+
+function loadState(){
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if(!raw){ ensureDefaultReasons(); return; }
+  try{
+    const data = JSON.parse(raw);
+    Object.entries(data.fields || {}).forEach(([k, v]) => {
+      const el = document.querySelector('[data-key="' + k + '"]');
+      if(el){ el.value = v; }
+    });
+    if(data.reasons && data.reasons.length){
+      data.reasons.forEach(r => addReasonRow(r.text, r.kind));
+    } else {
+      ensureDefaultReasons();
+    }
+    (data.checks || []).forEach(v => {
+      const el = document.querySelector('.support-check-input[value="' + v + '"]');
+      if(el) el.checked = true;
+    });
+    savedIndicator.textContent = '前回の入力を復元しました';
+  }catch(e){
+    ensureDefaultReasons();
+  }
+}
+
+/* 保存(デバウンス) & 自動リサイズ */
+document.addEventListener('input', e => {
+  if(e.target.matches('textarea[data-key], .reason-text')){
+    autoGrow(e.target);
+  }
+  if(e.target.matches('[data-key], .reason-text')){
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(saveState, 500);
+  }
+});
+document.addEventListener('change', e => {
+  if(e.target.matches('.support-check-input')) saveState();
+});
+
+/* できない理由リスト: 追加・削除・トグル */
+addReasonBtn.addEventListener('click', () => { addReasonRow('', ''); saveState(); });
+reasonListEl.addEventListener('click', e => {
+  const kindBtn = e.target.closest('.kind-btn');
+  if(kindBtn){
+    const row = kindBtn.closest('.reason-row');
+    const wasActive = kindBtn.classList.contains('active');
+    row.querySelectorAll('.kind-btn').forEach(b => b.classList.remove('active'));
+    if(!wasActive) kindBtn.classList.add('active');
+    saveState();
+    return;
+  }
+  const delBtn = e.target.closest('.reason-del');
+  if(delBtn){
+    delBtn.closest('.reason-row').remove();
+    saveState();
+  }
+});
+
+/* ヒントチップ: クリックでテキストエリアに挿入 */
+document.querySelectorAll('.chip-row .hint-chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    const targetKey = chip.closest('.chip-row').dataset.target;
+    const ta = document.querySelector('textarea[data-key="' + targetKey + '"]');
+    if(!ta) return;
+    const phrase = chip.textContent.trim();
+    const sep = ta.value.trim().length ? '\n・' : '・';
+    ta.value += sep + phrase + '：';
+    autoGrow(ta);
+    ta.focus();
+    ta.setSelectionRange(ta.value.length, ta.value.length);
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(saveState, 500);
+  });
+});
+
+/* スクロールスパイ & プログレスバー & ヘッダー演出 */
+const navLinks = document.querySelectorAll('.step-nav a');
+const spySections = document.querySelectorAll('#cover, .step-section, #summarySection, #declarationSection');
+const spyObserver = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if(entry.isIntersecting){
+      navLinks.forEach(a => a.classList.remove('active'));
+      const link = document.querySelector('.step-nav a[href="#' + entry.target.id + '"]');
+      if(link) link.classList.add('active');
+    }
+  });
+}, { rootMargin: '-42% 0px -50% 0px' });
+spySections.forEach(s => spyObserver.observe(s));
+
+function updateProgress(){
+  const scrollTop = window.scrollY;
+  const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+  const pct = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+  progressFill.style.width = pct + '%';
+  header.classList.toggle('scrolled', scrollTop > 10);
+}
+window.addEventListener('scroll', updateProgress, { passive: true });
+
+/* フェードイン(スクロール) */
+const revealObserver = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if(e.isIntersecting){ e.target.classList.add('visible'); revealObserver.unobserve(e.target); }
+  });
+}, { threshold: 0.12 });
+document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+/* PDFダウンロード(印刷) */
+document.getElementById('pdfBtn').addEventListener('click', () => window.print());
+window.addEventListener('beforeprint', () => {
+  document.querySelectorAll('textarea').forEach(autoGrow);
+});
+
+/* データ削除 */
+document.getElementById('resetBtn').addEventListener('click', () => {
+  if(confirm('入力したすべてのデータを削除します。よろしいですか？')){
+    localStorage.removeItem(STORAGE_KEY);
+    location.reload();
+  }
+});
+
+/* 初期化 */
+loadState();
+document.querySelectorAll('textarea[data-key]').forEach(autoGrow);
+updateProgress();
+</script>
+</body>
+</html>
