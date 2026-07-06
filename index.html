@@ -423,12 +423,16 @@ footer .note{max-width:560px;margin:0 auto 8px}
     <h2 style="font-size:16px">今、伸びしろのある本能</h2>
     <p class="section-desc" style="margin-top:2px">ジャーナル・共感マップでの出現回数(数値)が多いのに、スコアボードのアピール強度(バー)が低い本能ほどギャップが大きく表示されます。</p>
     <div class="i-bars" id="uxGapBars" style="margin-top:10px"></div>
+    <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--line)">
+      <p class="section-desc" style="margin-top:0">数値だけでは拾えない「生の言葉」まで踏まえて体験デザインを提案してほしい場合は、①スコアボード・②没入ジャーナル・③共感マップのデータをプロンプトとしてコピーできます。ChatGPTやClaudeに貼り付けてください。</p>
+      <button class="btn btn-primary" style="margin-top:8px" onclick="copyUxPrompt()">🤖 AI提案用プロンプトをコピー</button>
+    </div>
   </div>
   <div class="table-scroll">
     <table>
       <thead><tr>
-        <th style="width:120px">基礎本能</th><th style="width:70px">ランク</th><th style="width:16%">テクニック名</th>
-        <th>具体策(自社への適用)</th><th style="width:90px">本能スコア</th><th style="width:90px">実装性</th><th style="width:40px"></th>
+        <th style="width:120px">基礎本能</th><th style="width:80px">ランク(A-C)</th><th style="width:16%">テクニック名</th>
+        <th>具体策(自社への適用)</th><th style="width:100px">本能スコア(1-10)</th><th style="width:100px">実装性スコア(1-10)</th><th style="width:40px"></th>
       </tr></thead>
       <tbody id="uxBody"></tbody>
     </table>
@@ -732,6 +736,56 @@ function renderUxGapBars(gapData){
       <div class="i-bar-track"><div class="i-bar-fill" style="width:${Math.round(d.gap/maxGap*100)}%;background:${d.ins.color}"></div></div>
       <span class="num" style="text-align:right">${d.avg}%<span style="color:var(--i-yusuru);font-weight:600"> ・${d.journalCount}件</span></span>
     </div>`).join('');
+}
+/* スコアボード・ジャーナル・共感マップの3シートを、LLMにそのまま貼り付けられる
+   プロンプト付きテキストへ変換する(体験デザインのカスタム提案用) */
+function buildUxPrompt(){
+  const scoreboard = state.score
+    .filter(r=>r.strength>0 || r.where || r.memo)
+    .map(r=>({
+      基礎本能: iByKey(r.instinct).name, 二次本能: r.name, 具体的欲求: r.desc,
+      自社サービスの該当箇所: r.where || '(未記入)', アピール強度: r.strength+'%', 備考: r.memo || ''
+    }));
+  const journal = state.journal.map(e=>({
+    時間帯: e.time, 感情: e.emotion, 場所状況: e.place, 何をしているか: e.doing,
+    誰と: e.withWho, 背景の要望: e.want, 本能: e.instinct ? iByKey(e.instinct).name : '(未特定)'
+  }));
+  const empathyMap = state.empathy
+    .filter(c=>c.content)
+    .map(c=>({分析カテゴリー: c.cat, 内容: c.content, 推定される本能: c.instinct ? iByKey(c.instinct).name : '(未特定)'}));
+
+  return `あなたは進化論マーケティングの専門家です。8つの基礎本能(安らぐ・進める・決する・有する・属する・高める・伝える・物語る)のフレームワークに基づき、以下の顧客データを分析してください。
+
+データの内訳:
+① 二次本能スコアボード: 自社サービスが現状どの本能をどの程度刺激しているか(アピール強度)
+② 没入ジャーナル: ターゲットの1日の行動・感情の観測記録
+③ 共感マップ: ターゲットの脳内を8エリアで分析した生々しいエピソード
+
+このデータから、「観測は多いのに自社サービスの強度が低い=伸びしろが大きい本能」を特定した上で、それを刺激する「体験デザインチェックリスト」(科学的UXテクニックで顧客体験を洗練させる施策)をカスタム提案してください。
+
+出力は以下の列を持つ表形式でお願いします(最低5個以上):
+基礎本能 / ランク(A-C) / テクニック名 / 具体策(自社への適用) / 本能スコア(1-10、ターゲットの本能をどれだけ射貫けるか) / 実装性スコア(1-10、今すぐ低コストで実行できるか)
+
+--- 顧客データ(JSON) ---
+${JSON.stringify({scoreboard, journal, empathyMap}, null, 2)}`;
+}
+async function copyUxPrompt(){
+  const text = buildUxPrompt();
+  try{
+    await navigator.clipboard.writeText(text);
+    toast('プロンプトをコピーしました。ChatGPTやClaudeに貼り付けてください');
+  }catch(e){
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try{
+      document.execCommand('copy');
+      toast('プロンプトをコピーしました。ChatGPTやClaudeに貼り付けてください');
+    }catch(e2){
+      toast('コピーに失敗しました。ブラウザの権限設定をご確認ください');
+    }
+    document.body.removeChild(ta);
+  }
 }
 function renderUx(){
   const gapData = instinctGapMap();
