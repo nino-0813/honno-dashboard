@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>本能ボード | 進化論マーケティング実践ダッシュボード</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;600;800&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bone:#F4F3EE;
+  --paper:#FCFBF8;
+  --ink:#22201B;
+  --ink-soft:#5C574C;
+  --line:#DDD9CE;
+  --green:#2F4A3C;
+  --green-deep:#22382D;
+  --vermilion:#C8442C;
+  --vermilion-soft:#F4E0DA;
+  /* 8つの基礎本能カラー */
+  --i-yasuragu:#3E6B8C; /* 安らぐ=藍 */
+  --i-susumeru:#C8442C; /* 進める=朱 */
+  --i-kessuru:#6B5B8C;  /* 決する=菫 */
+  --i-yusuru:#A5772A;   /* 有する=金茶 */
+  --i-zokusuru:#4E7B4A; /* 属する=若竹 */
+  --i-takameru:#8C3E5C; /* 高める=蘇芳 */
+  --i-tsutaeru:#2E8C86; /* 伝える=浅葱 */
+  --i-monogataru:#7A4A2E;/* 物語る=煉瓦 */
+  --radius:10px;
+  --shadow:0 2px 10px rgba(34,32,27,.06);
+  --font-display:'Shippori Mincho',serif;
+  --font-body:'Zen Kaku Gothic New',sans-serif;
+  --font-mono:'IBM Plex Mono',monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--font-body);
+  background:var(--bone);
+  color:var(--ink);
+  font-size:15px;
+  line-height:1.7;
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  html{scroll-behavior:auto}
+}
+
+/* ===== ヘッダー ===== */
+.site-header{
+  position:sticky;top:0;z-index:100;
+  background:rgba(244,243,238,.92);
+  backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--line);
+  transition:box-shadow .3s, padding .3s;
+}
+.site-header.scrolled{box-shadow:0 2px 14px rgba(34,32,27,.1)}
+.header-inner{
+  max-width:1280px;margin:0 auto;
+  padding:14px 20px;
+  display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+  transition:padding .3s;
+}
+.site-header.scrolled .header-inner{padding:8px 20px}
+.brand{display:flex;align-items:baseline;gap:10px;text-decoration:none;color:var(--ink)}
+.brand-mark{
+  font-family:var(--font-display);font-weight:800;font-size:22px;
+  color:var(--green);letter-spacing:.04em;
+}
+.brand-mark .accent{color:var(--vermilion)}
+.brand-sub{font-size:11px;color:var(--ink-soft);letter-spacing:.12em}
+.header-actions{margin-left:auto;display:flex;gap:8px}
+
+/* ===== ナビ(タブ) ===== */
+.tabs{
+  max-width:1280px;margin:0 auto;padding:0 20px;
+  display:flex;gap:2px;overflow-x:auto;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+}
+.tabs::-webkit-scrollbar{display:none}
+.tab-btn{
+  appearance:none;border:none;background:transparent;
+  font-family:var(--font-body);font-size:13px;font-weight:500;
+  color:var(--ink-soft);padding:10px 14px;cursor:pointer;
+  border-bottom:3px solid transparent;white-space:nowrap;
+  transition:color .2s,border-color .2s;
+}
+.tab-btn:hover{color:var(--ink)}
+.tab-btn.active{color:var(--green);border-bottom-color:var(--vermilion);font-weight:700}
+.tab-btn:focus-visible{outline:2px solid var(--vermilion);outline-offset:-2px}
+
+/* ===== レイアウト ===== */
+main{max-width:1280px;margin:0 auto;padding:28px 20px 80px}
+.panel{display:none}
+.panel.active{display:block;animation:panelIn .45s ease both}
+@keyframes panelIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+
+.section-head{margin-bottom:20px}
+.eyebrow{
+  font-family:var(--font-mono);font-size:11px;letter-spacing:.2em;
+  color:var(--vermilion);text-transform:uppercase;
+}
+h1,h2{font-family:var(--font-display);font-weight:600;letter-spacing:.02em}
+h2{font-size:26px;color:var(--green-deep)}
+.section-desc{color:var(--ink-soft);font-size:13.5px;max-width:640px;margin-top:6px}
+
+.card{
+  background:var(--paper);border:1px solid var(--line);
+  border-radius:var(--radius);box-shadow:var(--shadow);
+  padding:20px;
+}
+.grid{display:grid;gap:16px}
+
+/* フェードイン(スクロール) */
+.reveal{opacity:0;transform:translateY(18px);transition:opacity .6s ease,transform .6s ease}
+.reveal.visible{opacity:1;transform:none}
+
+/* ===== ボタン ===== */
+.btn{
+  appearance:none;border:1px solid var(--line);background:var(--paper);
+  color:var(--ink);font-family:var(--font-body);font-size:13px;font-weight:500;
+  padding:8px 16px;border-radius:999px;cursor:pointer;
+  transition:transform .15s,box-shadow .15s,background .2s,color .2s;
+}
+.btn:hover{transform:translateY(-1px);box-shadow:0 3px 10px rgba(34,32,27,.12)}
+.btn:active{transform:translateY(0)}
+.btn:focus-visible{outline:2px solid var(--vermilion);outline-offset:2px}
+.btn-primary{
+  background:var(--vermilion);border-color:var(--vermilion);color:#fff;
+  position:relative;overflow:hidden;
+}
+.btn-primary::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(120deg,transparent 30%,rgba(255,255,255,.35) 50%,transparent 70%);
+  transform:translateX(-110%);
+}
+.btn-primary:hover::after{transform:translateX(110%);transition:transform .6s ease}
+.btn-green{background:var(--green);border-color:var(--green);color:#fff}
+.btn-sm{padding:4px 10px;font-size:12px}
+.btn-danger-ghost{color:var(--vermilion);border-color:transparent;background:transparent;box-shadow:none}
+.btn-danger-ghost:hover{background:var(--vermilion-soft);box-shadow:none;transform:none}
+
+/* ===== フォーム部品 ===== */
+input[type=text],input[type=time],textarea,select{
+  font-family:var(--font-body);font-size:13px;color:var(--ink);
+  background:#fff;border:1px solid var(--line);border-radius:6px;
+  padding:6px 8px;width:100%;
+  transition:border-color .2s,box-shadow .2s;
+}
+textarea{resize:vertical;min-height:56px}
+input:focus,textarea:focus,select:focus{
+  outline:none;border-color:var(--green);
+  box-shadow:0 0 0 3px rgba(47,74,60,.12);
+}
+input[type=range]{width:100%;accent-color:var(--vermilion)}
+input[type=number]{
+  font-family:var(--font-mono);font-size:13px;width:60px;text-align:center;
+  background:#fff;border:1px solid var(--line);border-radius:6px;padding:5px 4px;
+}
+label.f-label{font-size:11px;font-weight:700;color:var(--ink-soft);display:block;margin-bottom:3px;letter-spacing:.05em}
+
+/* ===== テーブル ===== */
+.table-scroll{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius);background:var(--paper)}
+table{border-collapse:collapse;width:100%;min-width:720px;font-size:13px}
+thead th{
+  font-family:var(--font-mono);font-size:10.5px;letter-spacing:.1em;
+  color:var(--ink-soft);text-align:left;font-weight:600;
+  padding:10px 10px;border-bottom:2px solid var(--line);
+  background:var(--bone);white-space:nowrap;
+  position:sticky;top:0;
+}
+tbody td{padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover{background:rgba(47,74,60,.03)}
+.num{font-family:var(--font-mono)}
+
+/* 本能タグ */
+.i-tag{
+  display:inline-flex;align-items:center;gap:5px;
+  font-size:11px;font-weight:700;padding:2px 9px;border-radius:999px;
+  background:var(--bone);border:1px solid var(--line);white-space:nowrap;
+}
+.i-dot{width:8px;height:8px;border-radius:50%;flex:none}
+
+/* 強度バー */
+.meter{display:flex;align-items:center;gap:8px;min-width:150px}
+.meter-track{flex:1;height:8px;border-radius:4px;background:var(--line);overflow:hidden}
+.meter-fill{height:100%;border-radius:4px;transition:width .3s ease}
+.meter-val{font-family:var(--font-mono);font-size:12px;width:38px;text-align:right}
+
+/* ===== ダッシュボード(概観) ===== */
+.hero{
+  background:var(--green-deep);color:#EDEAE0;
+  border-radius:14px;padding:32px 28px;
+  display:grid;grid-template-columns:1fr;gap:28px;
+  position:relative;overflow:hidden;
+}
+.hero::before{
+  content:'本能';position:absolute;right:-20px;bottom:-58px;
+  font-family:var(--font-display);font-weight:800;font-size:200px;
+  color:rgba(255,255,255,.045);line-height:1;pointer-events:none;
+}
+.hero h1{font-size:clamp(24px,4vw,34px);color:#fff;line-height:1.4}
+.hero h1 .v{color:#E8896F}
+.hero p{font-size:13.5px;color:rgba(237,234,224,.75);max-width:520px;margin-top:10px}
+.hero-cta{margin-top:18px;display:flex;gap:10px;flex-wrap:wrap}
+.radar-wrap{display:flex;flex-direction:column;align-items:center;gap:6px}
+.radar-caption{font-family:var(--font-mono);font-size:11px;letter-spacing:.15em;color:rgba(237,234,224,.6)}
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:20px}
+.stat-card{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);padding:16px}
+.stat-card .k{font-family:var(--font-mono);font-size:11px;letter-spacing:.12em;color:var(--ink-soft)}
+.stat-card .v{font-family:var(--font-display);font-size:30px;font-weight:600;color:var(--green-deep);line-height:1.2}
+.stat-card .v small{font-size:14px;font-family:var(--font-body);color:var(--ink-soft);font-weight:400}
+
+.i-bars{display:grid;gap:8px;margin-top:8px}
+.i-bar-row{display:grid;grid-template-columns:88px 1fr 44px;align-items:center;gap:10px;font-size:12px}
+.i-bar-track{height:12px;border-radius:6px;background:var(--line);overflow:hidden}
+.i-bar-fill{height:100%;border-radius:6px;transition:width .5s ease}
+
+/* SEIQ */
+.q-card{border-left:4px solid var(--green);padding-left:16px}
+.q-title{font-family:var(--font-display);font-size:16px;font-weight:600;color:var(--green-deep)}
+.priority-pill{font-family:var(--font-mono);font-weight:600;font-size:11px;padding:2px 8px;border-radius:4px}
+.pA{background:var(--vermilion);color:#fff}
+.pB{background:var(--i-yusuru);color:#fff}
+.pC{background:var(--line);color:var(--ink-soft)}
+
+/* 共感マップ */
+.empathy-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.empathy-cell{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);padding:14px;display:flex;flex-direction:column;gap:8px}
+.empathy-cell h3{font-family:var(--font-display);font-size:13.5px;font-weight:600;color:var(--green-deep)}
+.empathy-cell .no{font-family:var(--font-mono);font-size:10px;color:var(--vermilion);letter-spacing:.15em}
+
+/* 実装リスト強調 */
+tr.hot td{background:rgba(200,68,44,.06)}
+.hot-badge{font-size:10px;font-weight:700;color:#fff;background:var(--vermilion);border-radius:4px;padding:1px 6px;margin-left:6px;white-space:nowrap}
+
+/* トースト */
+.toast{
+  position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);
+  background:var(--ink);color:#fff;font-size:13px;padding:10px 20px;border-radius:999px;
+  opacity:0;pointer-events:none;transition:opacity .3s,transform .3s;z-index:200;
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+footer{border-top:1px solid var(--line);padding:24px 20px;text-align:center;font-size:12px;color:var(--ink-soft)}
+footer .note{max-width:560px;margin:0 auto 8px}
+
+/* ===== レスポンシブ ===== */
+@media(min-width:768px){
+  .hero{grid-template-columns:1.2fr .8fr;align-items:center}
+}
+@media(max-width:900px){
+  .empathy-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:480px){
+  .empathy-grid{grid-template-columns:1fr}
+  h2{font-size:22px}
+  .hero{padding:24px 18px}
+}
+</style>
+</head>
+<body>
+
+<header class="site-header" id="siteHeader">
+  <div class="header-inner">
+    <a class="brand" href="#" onclick="switchTab('dash');return false;">
+      <span class="brand-mark">本能<span class="accent">ボード</span></span>
+      <span class="brand-sub">INSTINCT MARKETING SYSTEM</span>
+    </a>
+    <div class="header-actions">
+      <button class="btn btn-sm" onclick="exportJSON()">保存(書き出し)</button>
+      <label class="btn btn-sm" style="display:inline-flex;align-items:center;cursor:pointer">
+        読み込み<input type="file" accept="application/json" style="display:none" onchange="importJSON(event)">
+      </label>
+    </div>
+  </div>
+  <nav class="tabs" role="tablist" aria-label="ワークシート">
+    <button class="tab-btn active" data-tab="dash" onclick="switchTab('dash')">⑥ ダッシュボード</button>
+    <button class="tab-btn" data-tab="score" onclick="switchTab('score')">① 二次本能スコアボード</button>
+    <button class="tab-btn" data-tab="journal" onclick="switchTab('journal')">② 没入ジャーナル</button>
+    <button class="tab-btn" data-tab="empathy" onclick="switchTab('empathy')">③ 共感マップ</button>
+    <button class="tab-btn" data-tab="seiq" onclick="switchTab('seiq')">④ SEIQプランニング</button>
+    <button class="tab-btn" data-tab="ux" onclick="switchTab('ux')">⑤ 体験デザイン</button>
+  </nav>
+</header>
+
+<main>
+
+<!-- ================= ⑥ ダッシュボード ================= -->
+<section class="panel active" id="panel-dash">
+  <div class="hero reveal">
+    <div>
+      <p class="eyebrow" style="color:#E8896F">CONTROL CENTER</p>
+      <h1>顧客は理屈で買わない。<br><span class="v">本能</span>で買う。</h1>
+      <p>没入ジャーナル・共感マップで見つけた「誰の・どの本能」と、体験デザインの「どうやって」を掛け合わせ、進化論的根拠のある施策へ鍛え上げる計器盤です。</p>
+      <div class="hero-cta">
+        <button class="btn btn-primary" onclick="switchTab('journal')">今日の記録を始める</button>
+        <button class="btn" style="background:transparent;color:#EDEAE0;border-color:rgba(255,255,255,.3)" onclick="switchTab('score')">武器を点検する</button>
+      </div>
+    </div>
+    <div class="radar-wrap">
+      <svg id="radar" width="300" height="280" viewBox="0 0 300 280" role="img" aria-label="8つの基礎本能レーダーチャート"></svg>
+      <span class="radar-caption">8 BASIC INSTINCTS — LIVE</span>
+    </div>
+  </div>
+
+  <div class="stats-row reveal" id="statsRow"></div>
+
+  <div class="grid reveal" style="grid-template-columns:1fr;margin-top:20px">
+    <div class="card">
+      <p class="eyebrow">INSTINCT SIGNAL</p>
+      <h2 style="font-size:18px">本能別の刺激シグナル</h2>
+      <p class="section-desc">スコアボードの平均強度(バー)と、ジャーナルで観測された出現回数(数値)。<strong style="color:var(--vermilion)">バーが短く、出現が多い本能</strong>が最大のチャンスです。</p>
+      <div class="i-bars" id="iBars"></div>
+    </div>
+  </div>
+
+  <div class="section-head reveal" style="margin-top:36px">
+    <p class="eyebrow">INTEGRATED ACTIONS</p>
+    <h2>統合施策リスト</h2>
+    <p class="section-desc">各ワークの洞察を1つに束ねた施策。検証結果まで記録してPDCAを回します。</p>
+  </div>
+  <div class="table-scroll reveal">
+    <table>
+      <thead><tr>
+        <th style="width:20%">統合施策名</th><th style="width:14%">根拠となる本能</th>
+        <th style="width:22%">ジャーナル/共感マップの洞察</th><th style="width:18%">体験デザイン適用</th>
+        <th style="width:11%">ステータス</th><th style="width:12%">検証結果</th><th></th>
+      </tr></thead>
+      <tbody id="integratedBody"></tbody>
+    </table>
+  </div>
+  <div style="margin-top:12px" class="reveal"><button class="btn btn-green" onclick="addIntegrated()">＋ 統合施策を追加</button></div>
+</section>
+
+<!-- ================= ① スコアボード ================= -->
+<section class="panel" id="panel-score">
+  <div class="section-head">
+    <p class="eyebrow">SHEET 01 — WEAPON CHECK</p>
+    <h2>二次本能スコアボード</h2>
+    <p class="section-desc">自社サービスが32の二次本能のどこを・どの程度刺激しているかを点検します。強度はスライダーで直感入力。バーの色は強度に応じて変化します。</p>
+  </div>
+  <div class="table-scroll">
+    <table>
+      <thead><tr>
+        <th style="width:36px">No.</th><th style="width:110px">基礎本能</th><th style="width:130px">二次本能</th>
+        <th>具体的欲求の説明</th><th style="width:20%">自社サービスの該当箇所</th>
+        <th style="width:220px">アピール強度</th><th style="width:14%">備考</th>
+      </tr></thead>
+      <tbody id="scoreBody"></tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ================= ② 没入ジャーナル ================= -->
+<section class="panel" id="panel-journal">
+  <div class="section-head">
+    <p class="eyebrow">SHEET 02 — DAILY SAMPLING</p>
+    <h2>没入ジャーナル</h2>
+    <p class="section-desc">ターゲット(または自分)の1日を30〜60分おきに記録し、行動の裏の本能を特定します。感情はありのままに、要望は「なぜそう感じた?」で掘り下げます。</p>
+  </div>
+
+  <div class="card" style="margin-bottom:20px">
+    <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr))">
+      <div><label class="f-label">時間帯</label><input type="time" id="jTime"></div>
+      <div><label class="f-label">感情の種類</label><input type="text" id="jEmotion" placeholder="イライラ / 満足感 / 焦り"></div>
+      <div><label class="f-label">場所・状況</label><input type="text" id="jPlace" placeholder="自宅・通勤中 など"></div>
+      <div><label class="f-label">何をしているか?</label><input type="text" id="jDoing" placeholder="SNSを見ている"></div>
+      <div><label class="f-label">誰と一緒にいるか?</label><input type="text" id="jWith" placeholder="ひとり / 家族"></div>
+    </div>
+    <div class="grid" style="grid-template-columns:1fr 1fr 180px;margin-top:12px;align-items:end">
+      <div><label class="f-label">背景の要望(なぜそう感じた?)</label><input type="text" id="jWant" placeholder="優れた成果を上げたい"></div>
+      <div><label class="f-label">その奥にある“本能”</label><select id="jInstinct"></select></div>
+      <div><button class="btn btn-primary" style="width:100%" onclick="addJournal()">記録する</button></div>
+    </div>
+  </div>
+
+  <div class="table-scroll">
+    <table>
+      <thead><tr>
+        <th style="width:70px">時間帯</th><th style="width:11%">感情</th><th style="width:13%">場所・状況</th>
+        <th style="width:15%">何をしているか</th><th style="width:11%">誰と</th><th>背景の要望</th>
+        <th style="width:120px">本能</th><th style="width:40px"></th>
+      </tr></thead>
+      <tbody id="journalBody"></tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ================= ③ 共感マップ ================= -->
+<section class="panel" id="panel-empathy">
+  <div class="section-head">
+    <p class="eyebrow">SHEET 03 — EMPATHY MAP</p>
+    <h2>共感マップ</h2>
+    <p class="section-desc">ターゲットの脳内を8エリアで分析します。「友人にストイックすぎると言われる」のような、生々しいエピソードで書くほど本能が透けて見えます。</p>
+  </div>
+  <div class="empathy-grid" id="empathyGrid"></div>
+</section>
+
+<!-- ================= ④ SEIQ ================= -->
+<section class="panel" id="panel-seiq">
+  <div class="section-head">
+    <p class="eyebrow">SHEET 04 — CREATIVE TRIGGERS</p>
+    <h2>SEIQプランニングシート</h2>
+    <p class="section-desc">7つの問いをトリガーに施策アイデアを量産します。1つの施策で刺激する本能の種類を増やす「刺さる本能の倍増」を常に意識してください。</p>
+  </div>
+  <div class="grid" id="seiqGrid" style="grid-template-columns:1fr"></div>
+</section>
+
+<!-- ================= ⑤ 体験デザイン ================= -->
+<section class="panel" id="panel-ux">
+  <div class="section-head">
+    <p class="eyebrow">SHEET 05 — 62 TECHNIQUES</p>
+    <h2>体験デザインチェックリスト</h2>
+    <p class="section-desc">科学的手法でユーザー体験を洗練させます。<strong style="color:var(--vermilion)">ランクA かつ 実装性スコア8以上</strong>は自動で「今すぐ実装」として強調表示されます。</p>
+  </div>
+  <div class="table-scroll">
+    <table>
+      <thead><tr>
+        <th style="width:120px">基礎本能</th><th style="width:70px">ランク</th><th style="width:16%">テクニック名</th>
+        <th>具体策(自社への適用)</th><th style="width:90px">本能スコア</th><th style="width:90px">実装性</th><th style="width:40px"></th>
+      </tr></thead>
+      <tbody id="uxBody"></tbody>
+    </table>
+  </div>
+  <div style="margin-top:12px"><button class="btn btn-green" onclick="addUx()">＋ テクニックを追加</button></div>
+</section>
+
+</main>
+
+<footer>
+  <p class="note">※ データはブラウザ上のメモリに保持されます。作業を終える前に必ずヘッダーの「保存(書き出し)」でJSONファイルを保存し、翌日は「読み込み」で再開してください。</p>
+  <p>本能ボード — 進化論マーケティング実践ダッシュボード</p>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* =========================================================
+   データ定義
+========================================================= */
+const INSTINCTS = [
+  {key:'yasuragu', name:'安らぐ', color:'var(--i-yasuragu)', hex:'#3E6B8C'},
+  {key:'susumeru', name:'進める', color:'var(--i-susumeru)', hex:'#C8442C'},
+  {key:'kessuru',  name:'決する', color:'var(--i-kessuru)',  hex:'#6B5B8C'},
+  {key:'yusuru',   name:'有する', color:'var(--i-yusuru)',   hex:'#A5772A'},
+  {key:'zokusuru', name:'属する', color:'var(--i-zokusuru)', hex:'#4E7B4A'},
+  {key:'takameru', name:'高める', color:'var(--i-takameru)', hex:'#8C3E5C'},
+  {key:'tsutaeru', name:'伝える', color:'var(--i-tsutaeru)', hex:'#2E8C86'},
+  {key:'monogataru',name:'物語る',color:'var(--i-monogataru)',hex:'#7A4A2E'},
+];
+const iByKey = k => INSTINCTS.find(i=>i.key===k) || INSTINCTS[0];
+
+/* 32の二次本能(基礎本能×4)— 名称は自由に編集可能 */
+const SECONDARY = [
+  ['yasuragu','心身の改善','健康・体調・メンタルを良くしたい'],
+  ['yasuragu','安全の確保','リスクや不安から守られたい'],
+  ['yasuragu','代償の削減','手間・コスト・痛みを減らしたい'],
+  ['yasuragu','休息の確保','疲れを癒やし、余白を持ちたい'],
+  ['susumeru','習得の前進','スキルや知識が伸びている実感が欲しい'],
+  ['susumeru','生産の確認','自分が何かを生み出した実感が欲しい'],
+  ['susumeru','目標の前進','ゴールに近づいている感覚が欲しい'],
+  ['susumeru','能力の拡大','できることの範囲を広げたい'],
+  ['kessuru','選択の自由','自分で選べる状態でいたい'],
+  ['kessuru','統制の実感','状況を自分でコントロールしたい'],
+  ['kessuru','決断の簡易','迷わずスパッと決めたい'],
+  ['kessuru','勝利の実感','競争に勝った・上回った感覚が欲しい'],
+  ['yusuru','希少の獲得','手に入りにくいものを持ちたい'],
+  ['yusuru','多種の確保','選択肢やバリエーションを確保したい'],
+  ['yusuru','資源の蓄積','お金・時間・モノを蓄えたい'],
+  ['yusuru','参照の確保','いつでも見返せる・頼れる情報が欲しい'],
+  ['zokusuru','帰属の確認','仲間・コミュニティの一員でいたい'],
+  ['zokusuru','承認の獲得','受け入れられ、認められたい'],
+  ['zokusuru','協力の実感','誰かと一緒に成し遂げたい'],
+  ['zokusuru','社会の改善','世の中や地域を良くしたい'],
+  ['takameru','自尊の改善','自分を好きでいたい・誇りたい'],
+  ['takameru','尊敬の追求','一目置かれる存在になりたい'],
+  ['takameru','勢力の増大','影響力・地位を高めたい'],
+  ['takameru','魅力の評価','外見・魅力を高く評価されたい'],
+  ['tsutaeru','個性の主張','自分らしさを表現したい'],
+  ['tsutaeru','感情の共有','気持ちを分かち合いたい'],
+  ['tsutaeru','影響の拡大','自分の発信を届けたい'],
+  ['tsutaeru','正当の主張','自分の考えの正しさを示したい'],
+  ['monogataru','没入の体験','時間を忘れて没頭したい'],
+  ['monogataru','感覚の経験','五感を刺激する体験がしたい'],
+  ['monogataru','意味の発見','行動に物語・意味を見出したい'],
+  ['monogataru','物語の共有','語りたくなるストーリーが欲しい'],
+];
+
+const EMPATHY_CATS = [
+  '主人公設定(属性)','何を見ているか?','何を語りどう行動するか?','何を耳にしているか?',
+  '何を考え何を感じているか?','イライラはどこにあるか?','ワクワクはどこにあるか?','その奥にある“本能”'
+];
+
+const SEIQ_QUESTIONS = [
+  'ターゲットのどの本能を刺激するか?',
+  '競合が満たしていない本能はどれか?',
+  '負の感情(イライラ)を解消する本能はどれか?',
+  '期待と現実のギャップをどう埋めるか?',
+  'どの二次本能を組み合わせるか?',
+  '体験デザインをどう反映するか?',
+  '実行の障壁は何か?'
+];
+
+const UX_STARTERS = [
+  ['yasuragu','A','シンプル化','手続き・文言・選択肢を減らし、迷いをなくす',8,9],
+  ['kessuru','A','デフォルト設定','おすすめプランを最初から選択済みにする',7,9],
+  ['takameru','A','権威ディスプレイ','実績・資格・メディア掲載を目立つ位置に置く',8,8],
+  ['susumeru','A','進捗トラッキング','来店回数・変化をバーやスタンプで見せる',9,7],
+  ['monogataru','B','ナラティブ効果','創業やお客様の変化を物語として語る',8,6],
+  ['yusuru','B','希少性シグナル','枠数・期間の限定を正直に提示する',7,8],
+  ['zokusuru','B','社会的証明','口コミ・利用者数・ビフォーアフターを見せる',8,7],
+  ['takameru','B','自己像カスタマイザー','診断・パーソナライズで「私専用」を作る',8,5],
+  ['susumeru','C','ゲーミフィケーション','ポイント・ランク・ミッションを設計する',6,4],
+  ['yasuragu','C','損失回避フレーム','「やらないと失うもの」を静かに提示する',6,7],
+  ['monogataru','C','ピークエンド設計','体験の山場と最後の一手を意図的に作る',7,5],
+  ['zokusuru','C','リマインダー設計','LINEで来店周期に合わせた声かけをする',6,8],
+];
+
+/* =========================================================
+   状態
+========================================================= */
+let state = {
+  score: SECONDARY.map((s,i)=>({no:i+1, instinct:s[0], name:s[1], desc:s[2], where:'', strength:0, memo:''})),
+  journal: [],
+  empathy: EMPATHY_CATS.map(c=>({cat:c, content:'', instinct:''})),
+  seiq: [], // {q:index, idea, instinct, priority}
+  ux: UX_STARTERS.map((u,i)=>({id:i+1, instinct:u[0], rank:u[1], name:u[2], plan:u[3], iScore:u[4], fScore:u[5]})),
+  integrated: []
+};
+
+/* =========================================================
+   ユーティリティ
+========================================================= */
+const $ = id => document.getElementById(id);
+const esc = s => String(s??'').replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+
+function toast(msg){
+  const t = $('toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(t._tm); t._tm = setTimeout(()=>t.classList.remove('show'), 2200);
+}
+function instinctTag(key){
+  if(!key) return '<span class="i-tag" style="opacity:.5">未特定</span>';
+  const i = iByKey(key);
+  return `<span class="i-tag"><span class="i-dot" style="background:${i.color}"></span>${i.name}</span>`;
+}
+function instinctSelect(value, onchange, allowEmpty){
+  let opts = allowEmpty ? '<option value="">— 選択 —</option>' : '';
+  opts += INSTINCTS.map(i=>`<option value="${i.key}" ${i.key===value?'selected':''}>${i.name}</option>`).join('');
+  return `<select onchange="${onchange}">${opts}</select>`;
+}
+function meterColor(v){
+  if(v>=70) return 'var(--green)';
+  if(v>=40) return 'var(--i-yusuru)';
+  if(v>0) return 'var(--vermilion)';
+  return 'var(--line)';
+}
+
+/* =========================================================
+   タブ切替
+========================================================= */
+function switchTab(name){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active', b.dataset.tab===name));
+  $('panel-'+name).classList.add('active');
+  if(name==='dash') renderDash();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+/* =========================================================
+   ① スコアボード
+========================================================= */
+function renderScore(){
+  $('scoreBody').innerHTML = state.score.map((r,idx)=>`
+    <tr>
+      <td class="num">${r.no}</td>
+      <td>${instinctTag(r.instinct)}</td>
+      <td style="font-weight:700">${esc(r.name)}</td>
+      <td style="color:var(--ink-soft)">${esc(r.desc)}</td>
+      <td><input type="text" value="${esc(r.where)}" placeholder="LP・動画・接客の該当箇所" oninput="state.score[${idx}].where=this.value"></td>
+      <td>
+        <div class="meter">
+          <input type="range" min="0" max="100" step="5" value="${r.strength}" oninput="updStrength(${idx}, this.value)">
+          <div class="meter-track"><div class="meter-fill" id="mf-${idx}" style="width:${r.strength}%;background:${meterColor(r.strength)}"></div></div>
+          <span class="meter-val" id="mv-${idx}">${r.strength}%</span>
+        </div>
+      </td>
+      <td><input type="text" value="${esc(r.memo)}" oninput="state.score[${idx}].memo=this.value"></td>
+    </tr>`).join('');
+}
+function updStrength(idx, v){
+  v = +v;
+  state.score[idx].strength = v;
+  $('mf-'+idx).style.width = v+'%';
+  $('mf-'+idx).style.background = meterColor(v);
+  $('mv-'+idx).textContent = v+'%';
+}
+
+/* =========================================================
+   ② 没入ジャーナル
+========================================================= */
+function addJournal(){
+  const e = {
+    time: $('jTime').value || '--:--',
+    emotion: $('jEmotion').value.trim(),
+    place: $('jPlace').value.trim(),
+    doing: $('jDoing').value.trim(),
+    withWho: $('jWith').value.trim(),
+    want: $('jWant').value.trim(),
+    instinct: $('jInstinct').value
+  };
+  if(!e.emotion && !e.doing){ toast('感情か行動のどちらかは入力してください'); return; }
+  state.journal.push(e);
+  ['jEmotion','jPlace','jDoing','jWith','jWant'].forEach(id=>$(id).value='');
+  renderJournal();
+  toast('記録しました');
+}
+function delJournal(i){ state.journal.splice(i,1); renderJournal(); }
+function renderJournal(){
+  $('journalBody').innerHTML = state.journal.length
+    ? state.journal.map((e,i)=>`
+      <tr>
+        <td class="num">${esc(e.time)}</td>
+        <td>${esc(e.emotion)}</td>
+        <td>${esc(e.place)}</td>
+        <td>${esc(e.doing)}</td>
+        <td>${esc(e.withWho)}</td>
+        <td>${esc(e.want)}</td>
+        <td>${instinctTag(e.instinct)}</td>
+        <td><button class="btn btn-sm btn-danger-ghost" onclick="delJournal(${i})" aria-label="削除">✕</button></td>
+      </tr>`).join('')
+    : `<tr><td colspan="8" style="text-align:center;color:var(--ink-soft);padding:24px">まだ記録がありません。上のフォームから1件目を記録すると、ダッシュボードのレーダーに反映されます。</td></tr>`;
+}
+
+/* =========================================================
+   ③ 共感マップ
+========================================================= */
+function renderEmpathy(){
+  $('empathyGrid').innerHTML = state.empathy.map((c,i)=>`
+    <div class="empathy-cell">
+      <span class="no">AREA 0${i+1}</span>
+      <h3>${esc(c.cat)}</h3>
+      <textarea placeholder="生々しいエピソードで書く" oninput="state.empathy[${i}].content=this.value">${esc(c.content)}</textarea>
+      <div>
+        <label class="f-label">推定される本能</label>
+        ${instinctSelect(c.instinct, `state.empathy[${i}].instinct=this.value`, true)}
+      </div>
+    </div>`).join('');
+}
+
+/* =========================================================
+   ④ SEIQ
+========================================================= */
+function addSeiq(q){
+  state.seiq.push({q, idea:'', instinct:INSTINCTS[0].key, priority:'B'});
+  renderSeiq();
+}
+function delSeiq(i){ state.seiq.splice(i,1); renderSeiq(); }
+function renderSeiq(){
+  $('seiqGrid').innerHTML = SEIQ_QUESTIONS.map((q,qi)=>{
+    const rows = state.seiq.map((s,si)=>({s,si})).filter(o=>o.s.q===qi);
+    const list = rows.map(({s,si})=>`
+      <div style="display:grid;grid-template-columns:1fr 130px 90px 36px;gap:8px;align-items:center;margin-top:8px">
+        <input type="text" value="${esc(s.idea)}" placeholder="アイデアを書く" oninput="state.seiq[${si}].idea=this.value">
+        ${instinctSelect(s.instinct, `state.seiq[${si}].instinct=this.value`)}
+        <select onchange="state.seiq[${si}].priority=this.value">
+          ${['A','B','C'].map(p=>`<option ${s.priority===p?'selected':''}>${p}</option>`).join('')}
+        </select>
+        <button class="btn btn-sm btn-danger-ghost" onclick="delSeiq(${si})" aria-label="削除">✕</button>
+      </div>`).join('');
+    return `
+      <div class="card q-card">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+          <div>
+            <span class="eyebrow">Q${qi+1}</span>
+            <p class="q-title">${esc(q)}</p>
+          </div>
+          <button class="btn btn-sm" onclick="addSeiq(${qi})">＋ アイデア追加</button>
+        </div>
+        ${list || '<p style="font-size:12px;color:var(--ink-soft);margin-top:8px">この問いのアイデアはまだありません。</p>'}
+      </div>`;
+  }).join('');
+}
+
+/* =========================================================
+   ⑤ 体験デザイン
+========================================================= */
+function isHot(r){ return r.rank==='A' && r.fScore>=8; }
+function addUx(){
+  state.ux.push({id:Date.now(), instinct:INSTINCTS[0].key, rank:'B', name:'', plan:'', iScore:5, fScore:5});
+  renderUx();
+}
+function delUx(i){ state.ux.splice(i,1); renderUx(); }
+function renderUx(){
+  const sorted = state.ux.map((r,i)=>({r,i}));
+  $('uxBody').innerHTML = sorted.map(({r,i})=>`
+    <tr class="${isHot(r)?'hot':''}">
+      <td>${instinctSelect(r.instinct, `state.ux[${i}].instinct=this.value;renderUx()`)}</td>
+      <td><select onchange="state.ux[${i}].rank=this.value;renderUx()">
+        ${['A','B','C'].map(p=>`<option ${r.rank===p?'selected':''}>${p}</option>`).join('')}
+      </select></td>
+      <td><input type="text" value="${esc(r.name)}" placeholder="テクニック名" oninput="state.ux[${i}].name=this.value">${isHot(r)?'<span class="hot-badge">今すぐ実装</span>':''}</td>
+      <td><input type="text" value="${esc(r.plan)}" placeholder="自社にどう適用するか" oninput="state.ux[${i}].plan=this.value"></td>
+      <td><input type="number" min="1" max="10" value="${r.iScore}" onchange="state.ux[${i}].iScore=+this.value;renderUx()"> <span class="num" style="font-size:10px;color:var(--ink-soft)">/10</span></td>
+      <td><input type="number" min="1" max="10" value="${r.fScore}" onchange="state.ux[${i}].fScore=+this.value;renderUx()"> <span class="num" style="font-size:10px;color:var(--ink-soft)">/10</span></td>
+      <td><button class="btn btn-sm btn-danger-ghost" onclick="delUx(${i})" aria-label="削除">✕</button></td>
+    </tr>`).join('');
+}
+
+/* =========================================================
+   ⑥ ダッシュボード
+========================================================= */
+function instinctAverages(){
+  return INSTINCTS.map(ins=>{
+    const rows = state.score.filter(r=>r.instinct===ins.key);
+    const avg = rows.length ? rows.reduce((a,b)=>a+b.strength,0)/rows.length : 0;
+    const journalCount = state.journal.filter(j=>j.instinct===ins.key).length
+      + state.empathy.filter(e=>e.instinct===ins.key).length;
+    return {ins, avg:Math.round(avg), journalCount};
+  });
+}
+function renderRadar(){
+  const data = instinctAverages();
+  const cx=150, cy=140, R=100, N=8;
+  const pt = (i, r) => {
+    const a = (Math.PI*2*i/N) - Math.PI/2;
+    return [cx + Math.cos(a)*r, cy + Math.sin(a)*r];
+  };
+  let svg = '';
+  // グリッド
+  [25,50,75,100].forEach(g=>{
+    const pts = data.map((_,i)=>pt(i, R*g/100).join(',')).join(' ');
+    svg += `<polygon points="${pts}" fill="none" stroke="rgba(255,255,255,.14)" stroke-width="1"/>`;
+  });
+  data.forEach((_,i)=>{
+    const [x,y] = pt(i,R);
+    svg += `<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="rgba(255,255,255,.14)"/>`;
+  });
+  // データ
+  const shape = data.map((d,i)=>pt(i, R*Math.max(d.avg,2)/100).join(',')).join(' ');
+  svg += `<polygon points="${shape}" fill="rgba(232,137,111,.28)" stroke="#E8896F" stroke-width="2" stroke-linejoin="round"/>`;
+  // ラベル・点
+  data.forEach((d,i)=>{
+    const [x,y] = pt(i, R*Math.max(d.avg,2)/100);
+    svg += `<circle cx="${x}" cy="${y}" r="3.5" fill="${d.ins.hex}" stroke="#fff" stroke-width="1"/>`;
+    const [lx,ly] = pt(i, R+22);
+    svg += `<text x="${lx}" y="${ly+4}" text-anchor="middle" font-size="12" font-family="'Zen Kaku Gothic New',sans-serif" fill="rgba(237,234,224,.9)">${d.ins.name}</text>`;
+  });
+  $('radar').innerHTML = svg;
+}
+function renderStats(){
+  const hotCount = state.ux.filter(isHot).length;
+  const aIdeas = state.seiq.filter(s=>s.priority==='A').length;
+  const avgAll = Math.round(state.score.reduce((a,b)=>a+b.strength,0)/state.score.length);
+  $('statsRow').innerHTML = `
+    <div class="stat-card"><p class="k">JOURNAL</p><p class="v">${state.journal.length}<small> 件の観測</small></p></div>
+    <div class="stat-card"><p class="k">AVG. APPEAL</p><p class="v">${avgAll}<small> % 平均強度</small></p></div>
+    <div class="stat-card"><p class="k">A-IDEAS</p><p class="v">${aIdeas}<small> 件の優先アイデア</small></p></div>
+    <div class="stat-card"><p class="k">READY TO SHIP</p><p class="v" style="color:var(--vermilion)">${hotCount}<small> 件 今すぐ実装</small></p></div>`;
+}
+function renderIBars(){
+  const data = instinctAverages();
+  $('iBars').innerHTML = data.map(d=>`
+    <div class="i-bar-row">
+      <span style="font-weight:700">${d.ins.name}</span>
+      <div class="i-bar-track"><div class="i-bar-fill" style="width:${d.avg}%;background:${d.ins.color}"></div></div>
+      <span class="num" style="text-align:right">${d.avg}%<span style="color:var(--vermilion);font-weight:600"> ・${d.journalCount}</span></span>
+    </div>`).join('');
+}
+function addIntegrated(){
+  state.integrated.push({name:'', instinct:INSTINCTS[0].key, insight:'', ux:'', status:'計画中', result:''});
+  renderIntegrated();
+}
+function delIntegrated(i){ state.integrated.splice(i,1); renderIntegrated(); }
+function renderIntegrated(){
+  $('integratedBody').innerHTML = state.integrated.length
+    ? state.integrated.map((r,i)=>`
+      <tr>
+        <td><input type="text" value="${esc(r.name)}" placeholder="施策名" oninput="state.integrated[${i}].name=this.value"></td>
+        <td>${instinctSelect(r.instinct, `state.integrated[${i}].instinct=this.value`)}</td>
+        <td><input type="text" value="${esc(r.insight)}" placeholder="誰の・どんな悩み" oninput="state.integrated[${i}].insight=this.value"></td>
+        <td><input type="text" value="${esc(r.ux)}" placeholder="適用テクニック" oninput="state.integrated[${i}].ux=this.value"></td>
+        <td><select onchange="state.integrated[${i}].status=this.value">
+          ${['計画中','実行中','検証中','完了'].map(s=>`<option ${r.status===s?'selected':''}>${s}</option>`).join('')}
+        </select></td>
+        <td><input type="text" value="${esc(r.result)}" placeholder="結果・学び" oninput="state.integrated[${i}].result=this.value"></td>
+        <td><button class="btn btn-sm btn-danger-ghost" onclick="delIntegrated(${i})" aria-label="削除">✕</button></td>
+      </tr>`).join('')
+    : `<tr><td colspan="7" style="text-align:center;color:var(--ink-soft);padding:24px">統合施策はまだありません。「＋ 統合施策を追加」から、洞察×手法を1つの武器に束ねましょう。</td></tr>`;
+}
+function renderDash(){ renderRadar(); renderStats(); renderIBars(); renderIntegrated(); }
+
+/* =========================================================
+   保存・読み込み
+========================================================= */
+function exportJSON(){
+  const blob = new Blob([JSON.stringify(state, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  const d = new Date();
+  a.download = `honno-board-${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}.json`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast('JSONを書き出しました');
+}
+function importJSON(ev){
+  const file = ev.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try{
+      const data = JSON.parse(reader.result);
+      if(!data.score || !data.empathy) throw new Error('形式が違います');
+      state = data;
+      renderAll();
+      toast('データを読み込みました');
+    }catch(e){ toast('読み込めませんでした:JSON形式を確認してください'); }
+  };
+  reader.readAsText(file);
+  ev.target.value = '';
+}
+
+/* =========================================================
+   初期化・演出
+========================================================= */
+function renderAll(){
+  renderScore(); renderJournal(); renderEmpathy(); renderSeiq(); renderUx(); renderDash();
+}
+// 本能セレクト(ジャーナル用)
+$('jInstinct').innerHTML = INSTINCTS.map(i=>`<option value="${i.key}">${i.name}</option>`).join('');
+
+// スクロールでヘッダー縮小
+window.addEventListener('scroll', ()=>{
+  $('siteHeader').classList.toggle('scrolled', window.scrollY > 24);
+}, {passive:true});
+
+// スクロールフェードイン
+const io = new IntersectionObserver(entries=>{
+  entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('visible'); io.unobserve(e.target); } });
+},{threshold:.12});
+document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+
+renderAll();
+</script>
+</body>
+</html>
