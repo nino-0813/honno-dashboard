@@ -414,6 +414,12 @@ footer .note{max-width:560px;margin:0 auto 8px}
     <h2>共感マップ</h2>
     <p class="section-desc">ターゲットの脳内を8エリアで分析します。「友人にストイックすぎると言われる」のような、生々しいエピソードで書くほど本能が透けて見えます。</p>
   </div>
+  <div class="card" id="empathyExamplesCard" style="margin-bottom:20px">
+    <p class="eyebrow">REFERENCE EXAMPLES</p>
+    <h2 style="font-size:16px">書き方に迷ったら、記入例を見る</h2>
+    <p class="section-desc" style="margin-top:2px">クリックすると、サロン・ウェルネス系の記入例をポップアップで確認できます。あなたの入力内容が上書きされることはありません。</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px" id="empathyExampleChips"></div>
+  </div>
   <div class="empathy-grid" id="empathyGrid"></div>
 </section>
 
@@ -467,6 +473,16 @@ footer .note{max-width:560px;margin:0 auto 8px}
 </footer>
 
 <div class="toast" id="toast"></div>
+
+<div id="empathyModal" onclick="if(event.target===this)closeEmpathyModal()" style="display:none;position:fixed;inset:0;background:rgba(34,32,27,.55);z-index:300;align-items:center;justify-content:center;padding:20px">
+  <div class="card" style="max-width:720px;width:100%;max-height:80vh;overflow-y:auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px">
+      <h2 id="empathyModalTitle" style="font-size:18px"></h2>
+      <button class="btn btn-sm" onclick="closeEmpathyModal()">✕ 閉じる</button>
+    </div>
+    <div id="empathyModalBody" style="margin-top:14px;display:grid;gap:14px"></div>
+  </div>
+</div>
 
 <script>
 /* =========================================================
@@ -523,6 +539,75 @@ const SECONDARY = [
 const EMPATHY_CATS = [
   '主人公設定(属性)','何を見ているか?','何を語りどう行動するか?','何を耳にしているか?',
   '何を考え何を感じているか?','イライラはどこにあるか?','ワクワクはどこにあるか?','その奥にある“本能”'
+];
+
+/* 共感マップの記入例(サロン・ウェルネス系)— 参考表示専用。ユーザーの入力は上書きしない */
+const EMPATHY_EXAMPLES = [
+  {
+    icon:'💇‍♀️', label:'美容サロン(40代女性)', instinct:'takameru',
+    areas:[
+      '42歳、正社員(管理職)、既婚、子供は中学生。忙しくて自分の身なりに手が回らない。',
+      'SNSで同世代の"若見え"投稿、会社の後輩の肌の良さ、鏡に映る疲れた自分の顔。',
+      '「もう歳だから仕方ない」と諦めた口ぶりで言いつつ、こっそり美容医療の口コミを検索している。',
+      'ママ友の「あそこのサロンが良かった」という話、同僚の「痩せた?」という何気ない一言。',
+      '「若い頃の写真と比べてしまう」「自分にお金や時間を使うのは後回しにしてきた」という後ろめたさと焦り。',
+      '予約の取りづらさ、施術の説明が専門用語ばかりでわからない、効果が続かない。',
+      '「今日は肌の調子いいね」と言われた瞬間、担当者が前回の会話を覚えていてくれたこと。',
+      '頑張ってきた自分を、もう一度誇れるようにしたい。'
+    ]
+  },
+  {
+    icon:'🏋️', label:'パーソナルジム(30代男性)', instinct:'kessuru',
+    areas:[
+      '34歳、独身、営業職。会食が多く不摂生。健康診断でメタボ判定を受けた。',
+      'Instagramの筋トレ系インフルエンサーの投稿、同期がジムで痩せて自信ありげになった姿。',
+      '「そのうちやる」と言いながら、ジムの体験予約ページを何度も開いては閉じている。',
+      '友人の「久しぶり、なんか老けた?」という一言、上司の「健康第一だぞ」という忠告。',
+      '「このままだと同期に置いていかれる」という焦り、「昔は自信があったのに」という劣等感。',
+      '一人で続けられる自信がない、何をすればいいかわからない、時間がない。',
+      'トレーナーに褒められた瞬間、体重が1kg減った通知が来た時。',
+      'もう一度、自分をコントロールできている実感が欲しい。'
+    ]
+  },
+  {
+    icon:'💆', label:'整体院・整骨院(40代・慢性痛)', instinct:'yasuragu',
+    areas:[
+      '45歳、デスクワーク中心の会社員。長年の肩こり・腰痛持ちで、湿布とマッサージ器でごまかしている。',
+      '職場の同僚が整体に通い始めて調子が良さそうな様子、SNSの「猫背改善」広告。',
+      '「もう歳だから仕方ない」と周囲に言いながら、痛み止めを常備している。',
+      '家族の「そんなに痛いなら病院行きなよ」という心配、同僚の「あそこの整体良かったよ」という話。',
+      '「このままずっとこの痛みと付き合うのか」という諦めと不安。',
+      '病院に行っても原因がはっきりしない、施術者によって説明が違う、通院が続かない。',
+      '施術後に体が軽くなった瞬間、「姿勢が良くなったね」と言われた時。',
+      '痛みから解放されて、本来の自分の体を取り戻したい。'
+    ]
+  },
+  {
+    icon:'🧘', label:'オンラインヨガ(忙しい母親)', instinct:'yasuragu',
+    areas:[
+      '33歳、時短勤務、未就学児の母。自分の時間がほぼ取れない。',
+      'インスタの"5分でできる"系動画、他のママの「自分時間を確保してる」投稿。',
+      '「私には無理」と言いながら、深夜にヨガの動画を保存だけしている。',
+      'ママ友の「オンラインヨガ始めたよ」という話、子供の「ママ疲れてるね」という一言。',
+      '「自分のことは後回し」という罪悪感、「少しでいいから心を落ち着けたい」という願望。',
+      '通う時間がない、子供が邪魔をする、続ける自信がない。',
+      '5分だけでも動けた日の達成感、画面越しでも褒められた瞬間。',
+      '完璧じゃなくていいから、自分のための時間を持てている実感が欲しい。'
+    ]
+  },
+  {
+    icon:'🛁', label:'高級エステ・スパ(50代・ご褒美需要)', instinct:'monogataru',
+    areas:[
+      '52歳、子育てを終え、時間とお金に少し余裕が出てきた主婦。',
+      '高級ホテルのスパの雑誌広告、友人の"人生を楽しんでいる"SNS投稿。',
+      '「たまには自分にご褒美を」と言いながら、値段を見て予約をためらう。',
+      '友人の「あそこのスパ、非日常だったよ」という話。',
+      '「これまで家族のために生きてきた」「そろそろ自分を大切にしていい頃」という思い。',
+      '気軽に行ける価格帯ではない、一人で行くのは気が引ける。',
+      '施術中に完全に日常を忘れられた瞬間、丁寧な接客に"大切にされている"と感じた時。',
+      '頑張ってきた人生に、特別な時間で"意味"を与えたい。'
+    ]
+  }
 ];
 
 const SEIQ_QUESTIONS = [
@@ -682,6 +767,22 @@ function renderEmpathy(){
       </div>
     </div>`).join('');
 }
+function renderEmpathyExampleChips(){
+  $('empathyExampleChips').innerHTML = EMPATHY_EXAMPLES.map((ex,i)=>`
+    <button type="button" class="btn btn-sm" onclick="openEmpathyModal(${i})">${ex.icon} ${esc(ex.label)}</button>`).join('');
+}
+function openEmpathyModal(i){
+  const ex = EMPATHY_EXAMPLES[i];
+  $('empathyModalTitle').textContent = `${ex.icon} ${ex.label} の記入例`;
+  $('empathyModalBody').innerHTML = EMPATHY_CATS.map((cat,ci)=>`
+    <div>
+      <p style="font-family:var(--font-mono);font-size:10px;color:var(--vermilion);letter-spacing:.1em">AREA 0${ci+1} ・ ${esc(cat)}</p>
+      <p style="font-size:13px;margin-top:4px">${esc(ex.areas[ci])}</p>
+      ${ci===7 ? `<div style="margin-top:6px">${instinctTag(ex.instinct)}</div>` : ''}
+    </div>`).join('');
+  $('empathyModal').style.display = 'flex';
+}
+function closeEmpathyModal(){ $('empathyModal').style.display = 'none'; }
 
 /* =========================================================
    ④ SEIQ
@@ -958,6 +1059,9 @@ function renderAll(){
 }
 // 本能セレクト(ジャーナル用)
 $('jInstinct').innerHTML = INSTINCTS.map(i=>`<option value="${i.key}">${i.name}</option>`).join('');
+// 共感マップの記入例チップ
+renderEmpathyExampleChips();
+window.addEventListener('keydown', e=>{ if(e.key==='Escape') closeEmpathyModal(); });
 
 // スクロールでヘッダー縮小
 window.addEventListener('scroll', ()=>{
