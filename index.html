@@ -267,6 +267,7 @@ footer .note{max-width:560px;margin:0 auto 8px}
       <span class="brand-sub">INSTINCT MARKETING SYSTEM</span>
     </a>
     <div class="header-actions">
+      <button class="btn btn-sm" onclick="openInstinctModal()">📖 本能ガイド</button>
       <button class="btn btn-sm" onclick="exportJSON()">保存(書き出し)</button>
       <label class="btn btn-sm" style="display:inline-flex;align-items:center;cursor:pointer">
         読み込み<input type="file" accept="application/json" style="display:none" onchange="importJSON(event)">
@@ -472,6 +473,17 @@ footer .note{max-width:560px;margin:0 auto 8px}
   </div>
 </div>
 
+<div id="instinctModal" onclick="if(event.target===this)closeInstinctModal()" style="display:none;position:fixed;inset:0;background:rgba(34,32,27,.55);z-index:300;align-items:center;justify-content:center;padding:20px">
+  <div class="card" style="max-width:760px;width:100%;max-height:85vh;overflow-y:auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px">
+      <h2 style="font-size:18px">📖 8つの基礎本能ガイド</h2>
+      <button class="btn btn-sm" onclick="closeInstinctModal()">✕ 閉じる</button>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px" id="instinctModalNav"></div>
+    <div id="instinctModalBody" style="margin-top:16px"></div>
+  </div>
+</div>
+
 <script>
 /* =========================================================
    データ定義
@@ -487,6 +499,35 @@ const INSTINCTS = [
   {key:'monogataru',name:'物語る',color:'var(--i-monogataru)',hex:'#7A4A2E'},
 ];
 const iByKey = k => INSTINCTS.find(i=>i.key===k) || INSTINCTS[0];
+
+/* 8つの基礎本能の詳細ガイド(定義・活性化した人の行動/要因/商品例)。
+   属する・高める・伝える・物語るは資料入手待ちのため未収録 */
+const INSTINCT_DETAILS = {
+  yasuragu:{
+    desc:'心身の危険から離れて、不安や恐怖から逃れたい本能',
+    behaviors:['リスクを取らない','現状維持を好む','損失を嫌う','似たような人を探す','多勢の意見に左右されやすくなる','注目を避ける','伝統を好む','多様性への欲求が下がる','外出を避ける','社交を避ける','理解しやすいものを好む','難しいものを嫌う','感情を隠す'],
+    factors:['他人の怒り','他者からの批判','悪いニュース','蛇や蜘蛛などの生物','怖い映画やテレビ','見知らぬ人間','暗闇','ストレス','経済不況','未来が見えない状況','選択肢が多すぎる状態','厳しい仕事','ネガティブな友人や身内'],
+    examples:['フェンス','ドアロック','警報システム','衛生用品','安全を強調したブランド','保険','健康食品','人間ドック','中級クラスの商品','伝統芸能','昔ながらの定番ブランド','ローカルな商品']
+  },
+  susumeru:{
+    desc:'明確なゴールを設定し、それをクリアしたい本能',
+    behaviors:['自己実現を目指す','結果を重視するサービスにこだわる','珍しいものに惹かれる','変化が激しいキャリアや趣味に惹かれる','楽しそうなものに惹かれる','リスクが高い行動を取る','仕事のモチベーションが上がる','報酬よりも成し遂げるものに意識が向く','イノベーションを好む','数値で変化がわかるものを好む'],
+    factors:['経済の好況','何らかの小さな進展があったとき','生活に希望が出たとき','良いニュースを見たとき','気分が良くなったあと','仕事がうまく進んだあと','何か斬新な商品を目にしたとき','他者の達成を見たとき'],
+    examples:['最先端ガジェット','デザイン家電','自己啓発書','オンラインサロン','エナジードリンク','サプリメント','学習系サービス','健康系サービス','ライフハック']
+  },
+  kessuru:{
+    desc:'自分の行動や目標を自分で決めて実行したい本能',
+    behaviors:['自己実現を目指す','選択肢が多いものに惹かれる','カスタマイズ性が高いものに惹かれる','起業を目指す','新しい趣味にのめり込む','副業をはじめる','アートに惹かれる','旅行に出る','単独行動を好む/外国語を習いはじめる'],
+    factors:['経済の見通しが良い状況','日々のマンネリ化','移動手段が奪われた状況','同調圧力が強い環境','先々の予定が詰まった状態','好きなものを禁止された環境'],
+    examples:['カルチャーセンター','旅行サービス','DIYアイテム','レンタル/シェアリングサービス','家事代行','キャンプ用品','動画配信サービス','転職エージェント','クラウドファンディング','テレワーク系サービス']
+  },
+  yusuru:{
+    desc:'生存に役立つ物や情報を蓄積したい本能',
+    behaviors:['貯金','コレクションをはじめる','時短系のサービスを選ぶ','労力を減らせるものを選ぶ','質が高いものを好む','散らかったものを整理するサービスを好む','すべてがとりそろったサービスを好む','情報性の高さを重んじる','リソースが保存されるサービスを好む'],
+    factors:['種類が豊富なものを見たとき','経済不況','難しい仕事','未来が見えない状況','選択肢が多すぎる状態','厳しい仕事','ネガティブな友人や身内'],
+    examples:['バーゲン','セール品','家事代行','要約サービス','全額返金保証','無料サンプルの提供','永久割引','カウンセリング','アドバイザー','収納整理用品','口コミサービス','キュレーションサービス','コレクターズアイテム']
+  }
+};
 
 /* 32の二次本能(基礎本能×4)— 名称は自由に編集可能 */
 const SECONDARY = [
@@ -974,7 +1015,7 @@ function toast(msg){
 function instinctTag(key){
   if(!key) return '<span class="i-tag" style="opacity:.5">未特定</span>';
   const i = iByKey(key);
-  return `<span class="i-tag"><span class="i-dot" style="background:${i.color}"></span>${i.name}</span>`;
+  return `<span class="i-tag" style="cursor:pointer" onclick="openInstinctModal('${i.key}')" title="「${i.name}」の詳しい説明を見る"><span class="i-dot" style="background:${i.color}"></span>${i.name}</span>`;
 }
 function instinctSelect(value, onchange, allowEmpty){
   let opts = allowEmpty ? '<option value="">— 選択 —</option>' : '';
@@ -987,6 +1028,38 @@ function meterColor(v){
   if(v>0) return 'var(--vermilion)';
   return 'var(--line)';
 }
+
+/* =========================================================
+   本能ガイド(モーダル)
+========================================================= */
+function instinctDetailList(title, items){
+  return `
+    <div>
+      <p class="f-label">${title}</p>
+      <ul style="margin-top:6px;padding-left:18px;font-size:12.5px;color:var(--ink-soft);display:grid;gap:3px">
+        ${items.map(t=>`<li>${esc(t)}</li>`).join('')}
+      </ul>
+    </div>`;
+}
+function openInstinctModal(key){
+  key = key || INSTINCTS[0].key;
+  $('instinctModalNav').innerHTML = INSTINCTS.map(i=>`
+    <button type="button" class="btn btn-sm ${i.key===key?'btn-primary':''}" onclick="openInstinctModal('${i.key}')">${i.name}</button>`).join('');
+  const ins = iByKey(key);
+  const d = INSTINCT_DETAILS[key];
+  $('instinctModalBody').innerHTML = !d
+    ? `<p style="font-size:14px;font-weight:700;color:var(--green-deep)">${esc(ins.name)}</p>
+       <p style="font-size:13px;color:var(--ink-soft);margin-top:10px">「${esc(ins.name)}」の詳しいガイドは準備中です。</p>`
+    : `<p style="font-size:14px;font-weight:700;color:var(--green-deep)">${esc(ins.name)}</p>
+       <p style="font-size:13px;color:var(--ink-soft);margin-top:4px">${esc(d.desc)}</p>
+       <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr));margin-top:14px;gap:16px">
+         ${instinctDetailList('よく見られる行動', d.behaviors)}
+         ${instinctDetailList('本能の活性要因', d.factors)}
+         ${instinctDetailList('具体的な商品の例', d.examples)}
+       </div>`;
+  $('instinctModal').style.display = 'flex';
+}
+function closeInstinctModal(){ $('instinctModal').style.display = 'none'; }
 
 /* =========================================================
    タブ切替
@@ -1241,7 +1314,7 @@ function renderRadar(){
     const [x,y] = pt(i, R*Math.max(d.avg,2)/100);
     svg += `<circle cx="${x}" cy="${y}" r="3.5" fill="${d.ins.hex}" stroke="#fff" stroke-width="1"/>`;
     const [lx,ly] = pt(i, R+22);
-    svg += `<text x="${lx}" y="${ly+4}" text-anchor="middle" font-size="12" font-family="'Zen Kaku Gothic New',sans-serif" fill="rgba(237,234,224,.9)">${d.ins.name}</text>`;
+    svg += `<text x="${lx}" y="${ly+4}" text-anchor="middle" font-size="12" font-family="'Zen Kaku Gothic New',sans-serif" fill="rgba(237,234,224,.9)" style="cursor:pointer" onclick="openInstinctModal('${d.ins.key}')">${d.ins.name}</text>`;
   });
   $('radar').innerHTML = svg;
 }
@@ -1259,7 +1332,7 @@ function renderIBars(){
   const data = instinctAverages();
   $('iBars').innerHTML = data.map(d=>`
     <div class="i-bar-row">
-      <span style="font-weight:700">${d.ins.name}</span>
+      <span style="font-weight:700;cursor:pointer" onclick="openInstinctModal('${d.ins.key}')">${d.ins.name}</span>
       <div class="i-bar-track"><div class="i-bar-fill" style="width:${d.avg}%;background:${d.ins.color}"></div></div>
       <span class="num" style="text-align:right">${d.avg}%<span style="color:var(--vermilion);font-weight:600"> ・${d.journalCount}</span></span>
     </div>`).join('');
@@ -1335,7 +1408,7 @@ renderEmpathyIndustryChips();
 renderEmpathyExampleChips();
 // AIプロンプト集(静的データなので初回のみ描画)
 renderPromptLibrary();
-window.addEventListener('keydown', e=>{ if(e.key==='Escape') closeEmpathyModal(); });
+window.addEventListener('keydown', e=>{ if(e.key==='Escape'){ closeEmpathyModal(); closeInstinctModal(); } });
 
 // スクロールでヘッダー縮小
 window.addEventListener('scroll', ()=>{
