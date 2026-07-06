@@ -233,11 +233,6 @@ tbody tr:hover{background:rgba(47,74,60,.03)}
 .empathy-cell h3{font-family:var(--font-display);font-size:13.5px;font-weight:600;color:var(--green-deep)}
 .empathy-cell .no{font-family:var(--font-mono);font-size:10px;color:var(--vermilion);letter-spacing:.15em}
 
-/* 実装リスト強調 */
-tr.hot td{background:rgba(200,68,44,.06)}
-.hot-badge{font-size:10px;font-weight:700;color:#fff;background:var(--vermilion);border-radius:4px;padding:1px 6px;margin-left:6px;white-space:nowrap}
-.gap-badge{font-size:10px;font-weight:700;color:#fff;background:var(--i-yusuru);border-radius:4px;padding:1px 6px;margin-left:6px;white-space:nowrap}
-
 /* トースト */
 .toast{
   position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);
@@ -284,7 +279,7 @@ footer .note{max-width:560px;margin:0 auto 8px}
     <button class="tab-btn" data-tab="journal" onclick="switchTab('journal')">② 没入ジャーナル</button>
     <button class="tab-btn" data-tab="empathy" onclick="switchTab('empathy')">③ 共感マップ</button>
     <button class="tab-btn" data-tab="seiq" onclick="switchTab('seiq')">④ SEIQプランニング</button>
-    <button class="tab-btn" data-tab="ux" onclick="switchTab('ux')">⑤ 体験デザイン</button>
+    <button class="tab-btn" data-tab="ux" onclick="switchTab('ux')">⑤ AIプロンプト</button>
   </nav>
 </header>
 
@@ -436,35 +431,25 @@ footer .note{max-width:560px;margin:0 auto 8px}
   <div class="grid" id="seiqGrid" style="grid-template-columns:1fr"></div>
 </section>
 
-<!-- ================= ⑤ 体験デザイン ================= -->
+<!-- ================= ⑤ AIプロンプト ================= -->
 <section class="panel" id="panel-ux">
   <div class="section-head">
-    <p class="eyebrow">SHEET 05 — 62 TECHNIQUES</p>
-    <h2>体験デザインチェックリスト</h2>
-    <p class="section-desc">科学的手法でユーザー体験を洗練させます。<strong style="color:var(--vermilion)">ランクA かつ 実装性スコア8以上</strong>は自動で「今すぐ実装」として強調表示されます。さらに<strong style="color:var(--i-yusuru)">スコアボード・ジャーナル・共感マップのデータ</strong>から「観測は多いのに強度が低い=伸びしろのある本能」を自動検出し、該当テクニックに🎯マークを付けます。</p>
+    <p class="eyebrow">SHEET 05 — AI PROMPT LIBRARY</p>
+    <h2>実践プロンプト集</h2>
+    <p class="section-desc">ここまでに入力した<strong style="color:var(--vermilion)">①スコアボード・②没入ジャーナル・③共感マップのデータ</strong>と、目的別のプロンプトをワンクリックで合体させ、そのままChatGPTやClaudeに貼り付けられる形でコピーします。集客・接客・リピートの3場面で、今すぐ使える10種類を用意しました。</p>
   </div>
-  <div class="card" id="uxGapCard" style="margin-bottom:20px">
-    <p class="eyebrow">DATA-DRIVEN GAP</p>
-    <h2 style="font-size:16px">今、伸びしろのある本能</h2>
-    <p class="section-desc" style="margin-top:2px">ジャーナル・共感マップでの出現回数(数値)が多いのに、スコアボードのアピール強度(バー)が低い本能ほどギャップが大きく表示されます。</p>
-    <div class="i-bars" id="uxGapBars" style="margin-top:10px"></div>
-    <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--line)">
-      <p class="section-desc" style="margin-top:0">数値だけでは拾えない「生の言葉」まで踏まえて体験デザインを提案してほしい場合は、①スコアボード・②没入ジャーナル・③共感マップのデータをプロンプトとしてコピーできます。ChatGPTやClaudeに貼り付けてください。</p>
-      <button class="btn btn-primary" style="margin-top:8px" onclick="copyUxPrompt()">🤖 AI提案用プロンプトをコピー</button>
-    </div>
+
+  <div style="margin-bottom:28px">
+    <p class="eyebrow" style="margin-bottom:10px">集客</p>
+    <div class="grid" id="promptGroup-集客" style="grid-template-columns:repeat(auto-fit,minmax(240px,1fr))"></div>
   </div>
-  <div class="table-scroll">
-    <table>
-      <thead><tr>
-        <th style="width:120px">基礎本能</th><th style="width:80px">ランク(A-C)</th><th style="width:16%">テクニック名</th>
-        <th>具体策(自社への適用)</th><th style="width:100px">本能スコア(1-10)</th><th style="width:100px">実装性スコア(1-10)</th><th style="width:40px"></th>
-      </tr></thead>
-      <tbody id="uxBody"></tbody>
-    </table>
+  <div style="margin-bottom:28px">
+    <p class="eyebrow" style="margin-bottom:10px">接客</p>
+    <div class="grid" id="promptGroup-接客" style="grid-template-columns:repeat(auto-fit,minmax(240px,1fr))"></div>
   </div>
-  <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap">
-    <button class="btn btn-green" onclick="addUx()">＋ テクニックを追加</button>
-    <button class="btn" onclick="sortUxByGap()">🎯 データ推奨順に並べ替え</button>
+  <div style="margin-bottom:12px">
+    <p class="eyebrow" style="margin-bottom:10px">リピート・売上</p>
+    <div class="grid" id="promptGroup-リピート" style="grid-template-columns:repeat(auto-fit,minmax(240px,1fr))"></div>
   </div>
 </section>
 
@@ -908,19 +893,59 @@ const SEIQ_QUESTIONS = [
   '実行の障壁は何か?'
 ];
 
-const UX_STARTERS = [
-  ['yasuragu','A','シンプル化','手続き・文言・選択肢を減らし、迷いをなくす',8,9],
-  ['kessuru','A','デフォルト設定','おすすめプランを最初から選択済みにする',7,9],
-  ['takameru','A','権威ディスプレイ','実績・資格・メディア掲載を目立つ位置に置く',8,8],
-  ['susumeru','A','進捗トラッキング','来店回数・変化をバーやスタンプで見せる',9,7],
-  ['monogataru','B','ナラティブ効果','創業やお客様の変化を物語として語る',8,6],
-  ['yusuru','B','希少性シグナル','枠数・期間の限定を正直に提示する',7,8],
-  ['zokusuru','B','社会的証明','口コミ・利用者数・ビフォーアフターを見せる',8,7],
-  ['takameru','B','自己像カスタマイザー','診断・パーソナライズで「私専用」を作る',8,5],
-  ['susumeru','C','ゲーミフィケーション','ポイント・ランク・ミッションを設計する',6,4],
-  ['yasuragu','C','損失回避フレーム','「やらないと失うもの」を静かに提示する',6,7],
-  ['monogataru','C','ピークエンド設計','体験の山場と最後の一手を意図的に作る',7,5],
-  ['zokusuru','C','リマインダー設計','LINEで来店周期に合わせた声かけをする',6,8],
+/* 集客・接客・リピートの実践プロンプト集。各instructionは、コピー時に
+   顧客データ(スコアボード・ジャーナル・共感マップ)と自動で合体する */
+const PROMPT_LIBRARY = [
+  {
+    category:'集客', icon:'📱', title:'SNS投稿の台本を作る',
+    desc:'本能に基づいたInstagram/TikTok投稿の台本を作成します。',
+    instruction:'以下の顧客データから、最も刺激すべき基礎本能を特定してください。その本能に刺さるInstagramリール/TikTok用の投稿台本を3パターン作成してください。各台本には「フック(最初の3秒)」「本編」「締め・CTA」の構成を明記し、どの本能を狙っているかも書き添えてください。'
+  },
+  {
+    category:'集客', icon:'✏️', title:'刺さるキャッチコピー・LP見出しを作る',
+    desc:'LPファーストビューや広告に使えるキャッチコピーを複数パターン作成します。',
+    instruction:'以下の顧客データから、最も刺激すべき基礎本能を特定してください。その本能に刺さるLPファーストビュー用のキャッチコピー(見出し)を10個作成してください。それぞれどの本能を刺激しているコピーかを併記してください。'
+  },
+  {
+    category:'集客', icon:'📢', title:'Web広告文(Google/Meta)を作る',
+    desc:'Google広告・Meta広告の見出しと説明文を複数パターン作成します。',
+    instruction:'以下の顧客データを踏まえ、Google広告(見出し複数・説明文)とMeta広告(プライマリテキスト・見出し)を、それぞれ異なる基礎本能を切り口にして5パターン作成してください。'
+  },
+  {
+    category:'集客', icon:'🗣️', title:'紹介・口コミを増やすお願いメッセージを作る',
+    desc:'既存顧客に自然に紹介・口コミをお願いするメッセージを作成します。',
+    instruction:'以下の顧客データを踏まえ、既存顧客に紹介や口コミ投稿を自然にお願いするメッセージ文(LINEやメールで送れる文面)を3パターン作成してください。押し付けがましくならないよう、顧客自身が得られるメリット(本能）に触れる伝え方にしてください。'
+  },
+  {
+    category:'接客', icon:'💬', title:'接客トークスクリプトを作る',
+    desc:'来店時の声かけからクロージングまでの接客トークを作成します。',
+    instruction:'以下の顧客データを踏まえ、初回来店のお客様への接客トークスクリプト(入店時の声かけ→ヒアリング→提案→クロージングの流れ)を作成してください。各ステップでどの基礎本能を意識した声かけかも明記してください。'
+  },
+  {
+    category:'接客', icon:'📋', title:'カウンセリング・ヒアリングシートを作る',
+    desc:'初回カウンセリングで使うヒアリング質問シートを作成します。',
+    instruction:'以下の顧客データを踏まえ、初回カウンセリング時に使うヒアリングシートの質問項目を10個作成してください。表面的な要望だけでなく、その奥にある基礎本能を引き出せる質問を優先してください。'
+  },
+  {
+    category:'接客', icon:'🙏', title:'クレーム・不満対応の返信文を作る',
+    desc:'顧客からの不満・クレームへの返信文テンプレートを作成します。',
+    instruction:'以下の顧客データを踏まえ、お客様からの不満・クレームに対する返信文のテンプレートを3パターン(軽度・中度・重度)作成してください。顧客がどの基礎本能を損なわれたと感じているかを推測し、その本能を回復させる言葉選びにしてください。'
+  },
+  {
+    category:'リピート', icon:'📩', title:'LINE/メルマガのステップ配信シナリオを作る',
+    desc:'新規顧客が定着するまでのステップ配信シナリオを作成します。',
+    instruction:'以下の顧客データを踏まえ、新規顧客が初回来店後に定着するまでのLINE/メルマガのステップ配信シナリオを5通分作成してください。それぞれ配信タイミングと、どの基礎本能を刺激する内容かを明記してください。'
+  },
+  {
+    category:'リピート', icon:'🎂', title:'再来店・記念日リマインドメッセージを作る',
+    desc:'来店周期や記念日に合わせた再来店促進メッセージを作成します。',
+    instruction:'以下の顧客データを踏まえ、顧客の来店周期や記念日(誕生日など)に合わせた再来店促進メッセージを3パターン作成してください。売り込み感を出さず、基礎本能に根ざした自然な声かけにしてください。'
+  },
+  {
+    category:'リピート', icon:'⬆️', title:'アップセル・クロスセル提案トークを作る',
+    desc:'既存顧客への次の提案トークを作成します。',
+    instruction:'以下の顧客データを踏まえ、既存顧客に対するアップセル・クロスセルの提案トーク例を3パターン作成してください。押し売り感が出ないよう、顧客自身の本能的なメリットを軸にした伝え方にしてください。'
+  }
 ];
 
 /* =========================================================
@@ -932,7 +957,6 @@ let state = {
   journal: [],
   empathy: EMPATHY_CATS.map(c=>({cat:c, content:'', instinct:''})),
   seiq: [], // {q:index, idea, instinct, priority}
-  ux: UX_STARTERS.map((u,i)=>({id:i+1, instinct:u[0], rank:u[1], name:u[2], plan:u[3], iScore:u[4], fScore:u[5]})),
   integrated: []
 };
 let empathyIndustryIdx = 0; // 共感マップの記入例で選択中の業界(UI選択のみ、保存対象外)
@@ -972,7 +996,6 @@ function switchTab(name){
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active', b.dataset.tab===name));
   $('panel-'+name).classList.add('active');
   if(name==='dash') renderDash();
-  if(name==='ux') renderUx();
   window.scrollTo({top:0, behavior:'smooth'});
 }
 
@@ -1118,45 +1141,11 @@ function renderSeiq(){
 }
 
 /* =========================================================
-   ⑤ 体験デザイン
+   ⑤ AIプロンプト
 ========================================================= */
-function isHot(r){ return r.rank==='A' && r.fScore>=8; }
-function addUx(){
-  state.ux.push({id:Date.now(), instinct:INSTINCTS[0].key, rank:'B', name:'', plan:'', iScore:5, fScore:5});
-  renderUx();
-}
-function delUx(i){ state.ux.splice(i,1); renderUx(); }
-
-/* 他シート(スコアボード/ジャーナル/共感マップ)のデータから、
-   「出現は多いのに強度が低い=伸びしろが大きい」本能を算出する */
-function instinctGapMap(){
-  return instinctAverages().map(d=>{
-    const gap = d.journalCount * (100 - d.avg) / 100;
-    return {...d, gap};
-  });
-}
-function topGapKeys(gapData, n){
-  n = n || 3;
-  return gapData.filter(g=>g.gap>0).sort((a,b)=>b.gap-a.gap).slice(0,n).map(g=>g.ins.key);
-}
-function sortUxByGap(){
-  const gapByKey = Object.fromEntries(instinctGapMap().map(g=>[g.ins.key, g.gap]));
-  state.ux.sort((a,b)=>(gapByKey[b.instinct]||0)-(gapByKey[a.instinct]||0));
-  renderUx();
-  toast('データに基づいて並べ替えました');
-}
-function renderUxGapBars(gapData){
-  const maxGap = Math.max(1, ...gapData.map(g=>g.gap));
-  $('uxGapBars').innerHTML = gapData.slice().sort((a,b)=>b.gap-a.gap).map(d=>`
-    <div class="i-bar-row">
-      <span style="font-weight:700">${d.ins.name}</span>
-      <div class="i-bar-track"><div class="i-bar-fill" style="width:${Math.round(d.gap/maxGap*100)}%;background:${d.ins.color}"></div></div>
-      <span class="num" style="text-align:right">${d.avg}%<span style="color:var(--i-yusuru);font-weight:600"> ・${d.journalCount}件</span></span>
-    </div>`).join('');
-}
 /* スコアボード・ジャーナル・共感マップの3シートを、LLMにそのまま貼り付けられる
-   プロンプト付きテキストへ変換する(体験デザインのカスタム提案用) */
-function buildUxPrompt(){
+   顧客データブロックへ変換する(全プロンプト共通で末尾に付与) */
+function buildCustomerDataBlock(){
   const scoreboard = state.score
     .filter(r=>r.strength>0 || r.where || r.memo)
     .map(r=>({
@@ -1171,7 +1160,7 @@ function buildUxPrompt(){
     .filter(c=>c.content)
     .map(c=>({分析カテゴリー: c.cat, 内容: c.content, 推定される本能: c.instinct ? iByKey(c.instinct).name : '(未特定)'}));
 
-  return `あなたは進化論マーケティングの専門家です。8つの基礎本能(安らぐ・進める・決する・有する・属する・高める・伝える・物語る)のフレームワークに基づき、以下の顧客データを分析してください。
+  return `あなたは進化論マーケティングの専門家です。8つの基礎本能(安らぐ・進める・決する・有する・属する・高める・伝える・物語る)のフレームワークに基づき、以下の顧客データを踏まえて回答してください。
 
 【扱っているサービス・商品】
 ${state.context.service || '(未入力)'}
@@ -1179,57 +1168,40 @@ ${state.context.service || '(未入力)'}
 【没入ジャーナル・共感マップでイメージしている人物像】
 ${state.context.target || '(未入力)'}
 
-データの内訳:
-① 二次本能スコアボード: 自社サービスが現状どの本能をどの程度刺激しているか(アピール強度)
-② 没入ジャーナル: 上記の人物像を想定した1日の行動・感情の観測記録
-③ 共感マップ: 上記の人物像の脳内を8エリアで分析した生々しいエピソード
-
-このデータから、「観測は多いのに自社サービスの強度が低い=伸びしろが大きい本能」を特定した上で、それを刺激する「体験デザインチェックリスト」(科学的UXテクニックで顧客体験を洗練させる施策)を、上記のサービス・人物像に即してカスタム提案してください。
-
-出力は以下の列を持つ表形式でお願いします(最低5個以上):
-基礎本能 / ランク(A-C) / テクニック名 / 具体策(自社への適用) / 本能スコア(1-10、ターゲットの本能をどれだけ射貫けるか) / 実装性スコア(1-10、今すぐ低コストで実行できるか)
-
 --- 顧客データ(JSON) ---
 ${JSON.stringify({scoreboard, journal, empathyMap}, null, 2)}`;
 }
-async function copyUxPrompt(){
-  const text = buildUxPrompt();
+function renderPromptLibrary(){
+  const groups = {'集客':[], '接客':[], 'リピート':[]};
+  PROMPT_LIBRARY.forEach((p,i)=>groups[p.category].push({p,i}));
+  Object.keys(groups).forEach(cat=>{
+    $('promptGroup-'+cat).innerHTML = groups[cat].map(({p,i})=>`
+      <div class="card" style="display:flex;flex-direction:column;gap:8px">
+        <div style="font-size:26px">${p.icon}</div>
+        <h3 style="font-family:var(--font-display);font-size:14px;font-weight:600;color:var(--green-deep)">${esc(p.title)}</h3>
+        <p style="font-size:12px;color:var(--ink-soft);flex:1">${esc(p.desc)}</p>
+        <button class="btn btn-primary btn-sm" onclick="copyPrompt(${i})">📋 データ+プロンプトをコピー</button>
+      </div>`).join('');
+  });
+}
+async function copyPrompt(i){
+  const p = PROMPT_LIBRARY[i];
+  const text = `${p.instruction}\n\n${buildCustomerDataBlock()}`;
   try{
     await navigator.clipboard.writeText(text);
-    toast('プロンプトをコピーしました。ChatGPTやClaudeに貼り付けてください');
+    toast(`「${p.title}」のプロンプトをコピーしました。ChatGPTやClaudeに貼り付けてください`);
   }catch(e){
     const ta = document.createElement('textarea');
     ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
     document.body.appendChild(ta); ta.select();
     try{
       document.execCommand('copy');
-      toast('プロンプトをコピーしました。ChatGPTやClaudeに貼り付けてください');
+      toast(`「${p.title}」のプロンプトをコピーしました。ChatGPTやClaudeに貼り付けてください`);
     }catch(e2){
       toast('コピーに失敗しました。ブラウザの権限設定をご確認ください');
     }
     document.body.removeChild(ta);
   }
-}
-function renderUx(){
-  const gapData = instinctGapMap();
-  const gapKeys = topGapKeys(gapData);
-  const sorted = state.ux.map((r,i)=>({r,i}));
-  $('uxBody').innerHTML = sorted.map(({r,i})=>{
-    const gapMatch = gapKeys.includes(r.instinct);
-    return `
-    <tr class="${isHot(r)?'hot':''}">
-      <td>${instinctSelect(r.instinct, `state.ux[${i}].instinct=this.value;renderUx()`)}</td>
-      <td><select onchange="state.ux[${i}].rank=this.value;renderUx()">
-        ${['A','B','C'].map(p=>`<option ${r.rank===p?'selected':''}>${p}</option>`).join('')}
-      </select></td>
-      <td><input type="text" value="${esc(r.name)}" placeholder="テクニック名" oninput="state.ux[${i}].name=this.value">${isHot(r)?'<span class="hot-badge">今すぐ実装</span>':''}${gapMatch?'<span class="gap-badge">🎯 伸びしろ</span>':''}</td>
-      <td><input type="text" value="${esc(r.plan)}" placeholder="自社にどう適用するか" oninput="state.ux[${i}].plan=this.value"></td>
-      <td><input type="number" min="1" max="10" value="${r.iScore}" onchange="state.ux[${i}].iScore=+this.value;renderUx()"> <span class="num" style="font-size:10px;color:var(--ink-soft)">/10</span></td>
-      <td><input type="number" min="1" max="10" value="${r.fScore}" onchange="state.ux[${i}].fScore=+this.value;renderUx()"> <span class="num" style="font-size:10px;color:var(--ink-soft)">/10</span></td>
-      <td><button class="btn btn-sm btn-danger-ghost" onclick="delUx(${i})" aria-label="削除">✕</button></td>
-    </tr>`;
-  }).join('');
-  renderUxGapBars(gapData);
 }
 
 /* =========================================================
@@ -1274,14 +1246,14 @@ function renderRadar(){
   $('radar').innerHTML = svg;
 }
 function renderStats(){
-  const hotCount = state.ux.filter(isHot).length;
   const aIdeas = state.seiq.filter(s=>s.priority==='A').length;
   const avgAll = Math.round(state.score.reduce((a,b)=>a+b.strength,0)/state.score.length);
+  const empathyFilled = state.empathy.filter(c=>c.content).length;
   $('statsRow').innerHTML = `
     <div class="stat-card"><p class="k">JOURNAL</p><p class="v">${state.journal.length}<small> 件の観測</small></p></div>
     <div class="stat-card"><p class="k">AVG. APPEAL</p><p class="v">${avgAll}<small> % 平均強度</small></p></div>
     <div class="stat-card"><p class="k">A-IDEAS</p><p class="v">${aIdeas}<small> 件の優先アイデア</small></p></div>
-    <div class="stat-card"><p class="k">READY TO SHIP</p><p class="v" style="color:var(--vermilion)">${hotCount}<small> 件 今すぐ実装</small></p></div>`;
+    <div class="stat-card"><p class="k">EMPATHY MAP</p><p class="v">${empathyFilled}<small> / 8 エリア記入済</small></p></div>`;
 }
 function renderIBars(){
   const data = instinctAverages();
@@ -1354,13 +1326,15 @@ function importJSON(ev){
    初期化・演出
 ========================================================= */
 function renderAll(){
-  renderContext(); renderScore(); renderJournal(); renderEmpathy(); renderSeiq(); renderUx(); renderDash();
+  renderContext(); renderScore(); renderJournal(); renderEmpathy(); renderSeiq(); renderDash();
 }
 // 本能セレクト(ジャーナル用)
 $('jInstinct').innerHTML = INSTINCTS.map(i=>`<option value="${i.key}">${i.name}</option>`).join('');
 // 共感マップの記入例チップ
 renderEmpathyIndustryChips();
 renderEmpathyExampleChips();
+// AIプロンプト集(静的データなので初回のみ描画)
+renderPromptLibrary();
 window.addEventListener('keydown', e=>{ if(e.key==='Escape') closeEmpathyModal(); });
 
 // スクロールでヘッダー縮小
